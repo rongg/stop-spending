@@ -16,18 +16,12 @@ class BudgetBar extends React.Component {
         if(this.state.budget === this.state.spent){
             svg = <svg viewBox={params.viewBox} style={{background: params.background, height: params.height + "px", width: params.width + "px"}}>
                 <rect x={params.spentRect.x} y={params.spentRect.y} fill={params.spentRect.fill} width={params.spentRect.width} height={params.spentRect.height}/>
-                <text style={{fontSize: params.fontSize}} x={params.spentLabel.x} y={params.spentLabel.y}>{params.spentLabel.text}</text>
-                <text style={{fontSize: params.fontSize}}  x={params.spentAmount.x} y={params.spentAmount.y}>{params.spentAmount.text}</text>
                 <text style={{fontSize: params.fontSize}}  x={params.budgetRem.x} y={params.budgetRem.y}>{params.budgetRem.text}</text>
             </svg>
         }else{
             svg = <svg viewBox={params.viewBox} style={{background: params.background, height: params.height + "px", width: params.width + "px"}}>
                 <rect x={params.budgetRect.x} y={params.budgetRect.y} fill={params.budgetRect.fill} width={params.budgetRect.width} height={params.budgetRect.height}/>
                 <rect x={params.spentRect.x} y={params.spentRect.y} fill={params.spentRect.fill} width={params.spentRect.width} height={params.spentRect.height}/>
-                <text style={{fontSize: params.fontSize}}  x={params.spentLabel.x} y={params.spentLabel.y}>{params.spentLabel.text}</text>
-                <text style={{fontSize: params.fontSize}}  x={params.spentAmount.x} y={params.spentAmount.y}>{params.spentAmount.text}</text>
-                <text style={{fontSize: params.fontSize}}  x={params.budgetLabel.x} y={params.budgetLabel.y}>{params.budgetLabel.text}</text>
-                <text style={{fontSize: params.fontSize}}  x={params.budgetAmount.x} y={params.budgetAmount.y}>{params.budgetAmount.text}</text>
                 <text style={{fontSize: params.fontSize}}  x={params.budgetRem.x} y={params.budgetRem.y}>{params.budgetRem.text}</text>
             </svg>;
         }
@@ -39,7 +33,6 @@ class BudgetBar extends React.Component {
 
 function getSVGParams(budget, spent, svgWidth, svgHeight) {
 
-    let outOfBounds = false;
     let scale = 1;
     if (budget <= 25) {
         scale *= 14;
@@ -59,7 +52,6 @@ function getSVGParams(budget, spent, svgWidth, svgHeight) {
 
     //  Scale graph height for over budget case
     const rem = budget - spent;
-    if (rem < -250) outOfBounds = true;
     if (rem <= -100) scale *= .125;
     else if (rem <= -50) scale *= .25;
     else if (rem <= -25) scale *= .5;
@@ -73,14 +65,15 @@ function getSVGParams(budget, spent, svgWidth, svgHeight) {
     const spentDim = spent * scale;
     const budgetRemDim = (budget - spent) * scale;
     const viewBoxHeight = 500;
-    const viewBoxWidth = 300;
-    const barWidth = 300;
+    const viewBoxWidth = 400;
+    const barWidth = 400;
 
 
     //  positions
     const xStart = viewBoxWidth / 2 - barWidth / 2;
-    const goalTxtX = xStart - 100;
-    const goalTxtY = viewBoxHeight - spentDim + 5;
+    const y1 = 0;
+    const y2 = rem / budget * viewBoxHeight;
+
     //  colors
     let budgetLeftBG = '#81D8AE';
     let budgetBG = '#42C486';
@@ -91,123 +84,66 @@ function getSVGParams(budget, spent, svgWidth, svgHeight) {
     const warningRangePct = .10;
 
 
-    const brOffset = 60;
-    let spentRect, budgetRect, budgetLabel, budgetAmount, spentAmount, spentLabel, budgetRem;
+    const brOffset = 55;
+    let spentRect, budgetRect, budgetRem;
 
     if (leftInBudget > (warningRangePct * budget)) {
         //  under budget
         spentRect = {
             x: xStart,
-            y: viewBoxHeight - spentDim,
+            y: y2,
             fill: budgetBG,
             width: barWidth,
-            height: spentDim
+            height: viewBoxHeight - y2
         };
 
         budgetRect = {
             x: xStart,
-            y: viewBoxHeight - spentDim - budgetRemDim,
+            y: y1,
             fill: budgetLeftBG,
             stroke: budgetRemStroke,
             width: barWidth,
-            height: budgetRemDim
-        };
-
-        spentLabel = {
-            text: 'Spent',
-            x: goalTxtX,
-            y: goalTxtY
-        };
-
-        spentAmount = {
-            text: "$" + spent,
-            x: xStart + barWidth + 10,
-            y: goalTxtY
-        };
-
-        budgetLabel = {
-            text: 'Budget',
-            x: goalTxtX - 10,
-            y: viewBoxHeight - spentDim - budgetRemDim + 5
-        };
-
-        budgetAmount = {
-            text: "$" + budget,
-            x: xStart + barWidth + 10,
-            y: viewBoxHeight - spentDim - budgetRemDim + 5
+            height: y2
         };
 
         budgetRem = {
             text: "$" + (budget - spent) + " left",
             x: xStart + barWidth / 2 - brOffset,
-            y: viewBoxHeight - spentDim - budgetRemDim / 2 + 5
+            y: y2 / 2 + 5
         };
-        //  Bottom case adjust
-        if(spentLabel.y >= viewBoxHeight - 2){
-            spentAmount.y -= 12;
-            spentLabel.y -= 12;
-        }
 
     } else if (leftInBudget >= 0) {
         //  Warning range
         budgetLeftBG = 'lightgreen';
         budgetRemStroke = 'red';
-        let txtYGoal = goalTxtY;
-        let txtYBudget = viewBoxHeight - spentDim - budgetRemDim + 5;
         let showBudget = true;
         if (budgetRemDim < 15) {
-            txtYGoal += 5;
-            txtYBudget -= 5;
             if (budgetRemDim === 0) {
                 showBudget = false;
             }
         }
         spentRect = {
             x: xStart,
-            y: viewBoxHeight - spentDim,
+            y: y2,
             fill: budgetBG,
             width: barWidth,
-            height: spentDim
+            height: viewBoxHeight - y2
         };
 
         if (showBudget) {
             budgetRect = {
                 x: xStart,
-                y: viewBoxHeight - spentDim - budgetRemDim,
+                y: 0,
                 fill: budgetLeftBG,
                 stroke: budgetRemStroke,
                 width: barWidth,
-                height: budgetRemDim
+                height: y2
             };
         }
 
-        spentLabel = {
-            text: 'Spent',
-            x: goalTxtX,
-            y: txtYGoal
-        };
-        spentAmount = {
-            text: "$" + spent,
-            x: xStart + barWidth + 10,
-            y: txtYGoal
-        };
-
-        if (showBudget) {
-            budgetLabel = {
-                text: 'Budget',
-                x: goalTxtX - 10,
-                y: txtYBudget
-            };
-            budgetAmount = {
-                text: "$" + budget,
-                x: xStart + barWidth + 10,
-                y: txtYBudget
-            };
-        }
         /*  Left to Spend   */
-        let heightLeft = viewBoxHeight - spentDim - budgetRemDim / 2 + 5;
-        //  put outside rect if not enough room
-        if (budgetRemDim < 15) heightLeft = viewBoxHeight - spentDim - budgetRemDim - 15;
+        let heightLeft = y2 / 2 + 10;
+        if(heightLeft < 25) heightLeft = 30;
 
         budgetRem = {
             text: "$" + (budget - spent) + " left",
@@ -221,57 +157,27 @@ function getSVGParams(budget, spent, svgWidth, svgHeight) {
         if (Math.abs(budget - spent) / budget > .10) yAdjust = 0;
         spentRect = {
             x: xStart,
-            y: viewBoxHeight - spentDim,
+            y: 0,
             fill: 'salmon',
             stroke: 'red',
             width: barWidth,
-            height: spentDim - budgetDim
+            height: viewBoxHeight
         };
 
         budgetRect = {
             x: xStart,
-            y: viewBoxHeight - budgetDim,
+            y: 0,
             fill: 'lightsalmon',
             width: barWidth,
-            height: budgetDim
-        };
-
-        spentLabel = {
-            text: 'Spent',
-            x: goalTxtX,
-            y: goalTxtY - yAdjust
-        };
-        spentAmount = {
-            text: "$" + spent,
-            x: xStart + barWidth + 10,
-            y: goalTxtY - yAdjust
-        };
-        budgetLabel = {
-            text: 'Budget',
-            x: goalTxtX - 10,
-            y: viewBoxHeight - spentDim - budgetRemDim + 5 + yAdjust
-        };
-        budgetAmount = {
-            text: "$" + budget,
-            x: xStart + barWidth + 10,
-            y: viewBoxHeight - spentDim - budgetRemDim + 5 + yAdjust
+            height: 0
         };
 
         /*  Left to Spend   */
         budgetRem = {
             text: "$" + Math.abs(budget - spent) + " over!",
             x: xStart + barWidth / 2 - brOffset,
-            y: viewBoxHeight - spentDim - budgetRemDim / 2 + 5 - yAdjust * 5
+            y: 25
         };
-
-        if(spentRect.y - spentRect.height < 0){
-            spentAmount.text = "^ " + spentAmount.text;
-            spentRect.height += spentRect.y;
-            spentRect.y = 0;
-            budgetRem.y = 20;
-            spentLabel.y = 20;
-            spentAmount.y = 20;
-        }
 
     }
 
@@ -280,13 +186,9 @@ function getSVGParams(budget, spent, svgWidth, svgHeight) {
         viewBox: viewBox,
         height: svgHeight,
         width: svgWidth,
-        background: 'gainsboro',
+        background: '#f5f5f5',
         spentRect: spentRect,
         budgetRect: budgetRect,
-        spentLabel: spentLabel,
-        budgetLabel: budgetLabel,
-        spentAmount: spentAmount,
-        budgetAmount: budgetAmount,
         budgetRem: budgetRem,
         fontSize: '28px'
     };
@@ -296,6 +198,6 @@ function getSVGParams(budget, spent, svgWidth, svgHeight) {
 
 let rootElem = document.querySelector('#budget-bar-root');
 if(rootElem) {
-    ReactDOM.render(<BudgetBar budget={100} spent={60} height={300} width={320}/>,
+    ReactDOM.render(<BudgetBar budget={75} spent={33} height={300} width={240}/>,
         rootElem);
 }
