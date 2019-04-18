@@ -9,7 +9,8 @@ class CalendarDay extends React.Component {
             dayNum: props.dayNum,
             checked: props.checked,
             svgParams: CalendarDay.getSvgParams(props),
-            calendarOnly: props.calendarOnly
+            calendarOnly: props.calendarOnly,
+            noText: props.noText
         }
     }
 
@@ -19,16 +20,14 @@ class CalendarDay extends React.Component {
         let svg = <svg viewBox={p.viewBox} style={{background: '#fff', height: p.height + "px", width: p.width + "px", margin: p.margin + "px"}}>
             <rect x={p.dayRect.x} y={p.dayRect.y} height={p.dayRect.height} width={p.dayRect.width} fill={'dodgerblue'}/>
             <rect x={p.dayNumRect.x} y={p.dayNumRect.y} height={p.dayNumRect.height} width={p.dayNumRect.width}  fill={fill}/>
-            <text x={p.day.x} y={p.day.y}
-                  style={{fontSize: '96px', fontWeight: 250, fill: '#ffffff'}}>{this.state.day}</text>
+            {!this.state.noText ? <text x={p.day.x} y={p.day.y}
+                  style={{fontSize: '96px', fontWeight: 250, fill: '#ffffff'}}>{this.state.day}</text> : null}
             <text x={p.dayNum.x} y={p.dayNum.y}
                   style={{fontSize: '336px', fontWeight: 250, fill: '#1e1e1e'}}>{this.state.dayNum}</text>
             { this.state.checked && !this.state.calendarOnly ? <path d={"M 200 475 l 100 100 l 250 -275"} stroke={"#6da134"} strokeWidth={"35"} fill={"none"} /> : null}
         </svg>;
 
-        return <div>
-            {svg}
-        </div>
+        return svg;
     }
 
     static getSvgParams(props) {

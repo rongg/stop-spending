@@ -17,6 +17,7 @@ class CalendarRow extends React.Component{
             {this.state.days.map((day, index) => (
                 <div key={index} className="d-inline-block" style={{textAlign: 'center', verticalAlign: 'top'}}>
                     <CalendarDay day={day.day} dayNum={day.num} checked={day.checked} height={100} calendarOnly={day.today}/>
+                    <br/>
                     {day.num < this.state.cDayOfMonth ? <span style={{padding: '2px 27px',
                         background: 'dodgerblue',
                         color: '#fff'}}>${day.spent}</span> : null}
