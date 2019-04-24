@@ -24,7 +24,7 @@ class CalendarDay extends React.Component {
                   style={{fontSize: '96px', fontWeight: 250, fill: '#ffffff'}}>{this.state.day}</text> : null}
             <text x={p.dayNum.x} y={p.dayNum.y}
                   style={{fontSize: '336px', fontWeight: 250, fill: '#1e1e1e'}}>{this.state.dayNum}</text>
-            { this.state.checked && !this.state.calendarOnly ? <path d={"M 200 475 l 100 100 l 250 -275"} stroke={"#6da134"} strokeWidth={"35"} fill={"none"} /> : null}
+            { this.state.checked && !this.state.calendarOnly ? <path d={"M 200 475 L300 575 Q390 430,525 300"} stroke={"#6da134"} strokeWidth={"35"} fill={"none"} /> : null}
         </svg>;
 
         return svg;

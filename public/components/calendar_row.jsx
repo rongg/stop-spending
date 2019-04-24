@@ -16,12 +16,12 @@ class CalendarRow extends React.Component{
         return <div className="col-md-12">
             {this.state.days.map((day, index) => (
                 <div key={index} className="d-inline-block" style={{textAlign: 'center', verticalAlign: 'top'}}>
-                    <CalendarDay day={day.day} dayNum={day.num} checked={day.checked} height={100} calendarOnly={day.today}/>
+                    <CalendarDay day={day.day} dayNum={day.num} checked={day.checked} height={75}/>
                     <br/>
                     {day.num < this.state.cDayOfMonth ? <span style={{padding: '2px 27px',
-                        background: 'dodgerblue',
+                        background: '#125699',
                         color: '#fff'}}>${day.spent}</span> : null}
-                    {day.num === this.state.cDayOfMonth ? <span style={{padding: '2px 27px',
+                    {day.num === this.state.cDayOfMonth ? <span style={{padding: '2px 16px',
                         background: '#ff8d1e',
                         color: '#fff'}}>Today!</span> : null}
                 </div>
