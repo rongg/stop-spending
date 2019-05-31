@@ -1,0 +1,4 @@
+{
+  "jwtPrivate": "",
+  "db": "mongodb://localhost/stop-spending"
+}
