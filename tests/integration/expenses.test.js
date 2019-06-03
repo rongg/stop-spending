@@ -12,7 +12,7 @@ describe('api/expenses', () => {
     beforeEach(async () => {
         server = require('../../index');
         user = new User({
-            _id: new mongoose.Types.ObjectId().toHexString(),
+            _id: new mongoose.Types.ObjectId(),
             name: 'Test User',
             email: 'test.user@mail.com',
             password: '12345'
@@ -96,7 +96,7 @@ describe('api/expenses', () => {
             await expense.save();
 
             const res = await request(server)
-                .get(`/api/expenses/${expense._id.toString()}`)
+                .get(`/api/expenses/${expense._id}`)
                 .set('Accept', 'application/json')
                 .set('x-auth-token', token);
 
@@ -119,7 +119,7 @@ describe('api/expenses', () => {
                 userId: user._id,
                 name: 'Expense 1',
                 amount: "should be integer",
-                habitId: habit._id.toString(),
+                habitId: habit._id,
                 habitName: habit.name
             });
             const res = await request(server)
@@ -129,6 +129,24 @@ describe('api/expenses', () => {
                 .set("Accept", "application/json");
 
             expect(res.status).toBe(400);
+        });
+
+        it('should check that the user exists', async () => {
+            const expense = new Expense({
+                userId: new mongoose.Types.ObjectId(),
+                name: 'Expense 1',
+                amount: 75,
+                habitId: habit._id,
+                habitName: habit.name
+            });
+            const res = await request(server)
+                .post("/api/expenses")
+                .send(expense)
+                .set("x-auth-token", token)
+                .set("Accept", "application/json");
+
+            expect(res.status).toBe(400);
+            expect(res.text).toBe("User doesn't exist");
         });
 
         it('should create a new expense', async () => {
@@ -282,7 +300,7 @@ describe('api/expenses', () => {
                 userId: user._id,
                 name: 'Expense 1',
                 amount: 100,
-                habitId: habit._id.toString(),
+                habitId: habit._id,
                 habitName: habit.name
             });
             const res1 = await request(server)

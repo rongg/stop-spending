@@ -85,12 +85,12 @@ describe('api/habits', () => {
             await habit.save();
 
             const res = await request(server)
-                .get(`/api/habits/${habit._id.toString()}`)
+                .get(`/api/habits/${habit._id}`)
                 .set('Accept', 'application/json')
                 .set('x-auth-token', token);
 
             expect(res.status).toBe(200);
-            expect(res.body._id.toString()).toMatch(habit._id.toString());
+            expect(res.body._id).toMatch(habit._id.toString());
             expect(res.body.name).toMatch(habit.name);
             expect(res.body.icon).toMatch(habit.icon);
             expect(res.body.userId).toMatch(habit.userId);
@@ -121,16 +121,16 @@ describe('api/habits', () => {
         it(`should reject creating a habit if it's name already exists`, async () => {
             const habit = new Habit({
                 name: "Duplicate habit",
-                userId: "1234",
+                userId: user._id,
                 budget: 100,
                 icon: "icons.com"
             });
+
             await request(server)
                 .post("/api/habits")
                 .send(habit)
                 .set("x-auth-token", token)
                 .set("Accept", "application/json");
-
             const res = await request(server)   //  Insert again
                 .post("/api/habits")
                 .send(habit)
@@ -141,10 +141,29 @@ describe('api/habits', () => {
             expect(res.text).toBe(`A habit with the name "${habit.name}" already exists!`);
         });
 
+        it('should check that the user exists', async () => {
+            const habit = new Habit({
+                name: "Habit A",
+                userId: new mongoose.Types.ObjectId(),
+                budget: 100,
+                icon: "icons.com"
+            });
+
+            const res = await request(server)   //  Insert again
+                .post("/api/habits")
+                .send(habit)
+                .set("x-auth-token", token)
+                .set("Accept", "application/json");
+
+
+            expect(res.status).toBe(400);
+            expect(res.text).toBe("User doesn't exist");
+        });
+
         it('should create a new habit', async () => {
             const habit = new Habit({
                 name: "New Habit",
-                userId: "1234",
+                userId: user._id,
                 budget: 2000,
                 icon: "icons.com"
             });

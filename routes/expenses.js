@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/auth');
 const {Habit} = require('../models/habit');
+const {User} = require('../models/user');
 const {Expense, validation} = require('../models/expense');
 
 
@@ -12,40 +13,42 @@ router.get('/', auth, async (req, res) => {
 });
 
 // GET api/expenses/:id -- single
-router.get('/:id', auth, async (req, res) =>{
-    if(!validation.checkId(req.params.id)){
+router.get('/:id', auth, async (req, res) => {
+    if (!validation.checkId(req.params.id)) {
         res.status(400).send("Invalid Id");
         return;
     }
     const expense = await Expense.findById(req.params.id);
-    if(expense){
+    if (expense) {
         res.send(expense);
-    }else{
+    } else {
         res.status(404).send("Not found");
     }
 });
 
 // POST api/expenses -- create
-router.post('/', auth, async(req, res) => {
+router.post('/', auth, async (req, res) => {
     //  Validate body
-    if(!validation.checkId(req.body.habitId)){
-        res.status(400).send("Invalid Habit Id");
-        return;
+    if (!validation.checkId(req.body.habitId)) {
+        return res.status(400).send("Invalid Habit Id");
     }
     const vResult = validation.check(req.body);
-    if(vResult.error){
-        res.status(400).send(vResult.error);
-        return;
+    if (vResult.error) {
+        return res.status(400).send(vResult.error);
     }
     //  Check habit exists
     const habit = await Habit.findById(req.body.habitId);
-    if(!habit){
-        res.status(404).send("Habit not found for Id");
-        return;
+    if (!habit) {
+        return res.status(404).send("Habit not found for Id");
+    }
+    //  Check user exists
+    const user = await User.findById(req.body.userId);
+    if (!user) {
+        return res.status(400).send("User doesn't exist");
     }
 
     const expense = new Expense({
-        userId: req.user._id,
+        userId: req.body.userId,
         name: req.body.name,
         amount: req.body.amount,
         habitId: req.body.habitId,
@@ -58,29 +61,29 @@ router.post('/', auth, async(req, res) => {
 });
 
 // PUT api/expense/:id -- update
-router.put('/:id', auth, async(req, res) => {
-    if(!validation.checkId(req.params.id)){
+router.put('/:id', auth, async (req, res) => {
+    if (!validation.checkId(req.params.id)) {
         res.status(400).send("Not found");
         return;
     }
     const expense = await Expense.findById(req.params.id);
-    if(!expense){
+    if (!expense) {
         res.status(404).send("Expense not found");
         return;
     }
     //  Validate input or return 400
     const vResult = validation.check(req.body);
-    if(vResult.error){
+    if (vResult.error) {
         res.status(400).send(vResult.error);
         return;
     }
     //  Check habit exists
-    if(!validation.checkId(req.body.habitId)){
+    if (!validation.checkId(req.body.habitId)) {
         res.status(400).send("Invalid Habit Id");
         return;
     }
     const habit = await Habit.findById(req.body.habitId);
-    if(!habit){
+    if (!habit) {
         res.status(404).send("Habit not found for Id");
         return;
     }
@@ -97,13 +100,13 @@ router.put('/:id', auth, async(req, res) => {
 });
 
 // DELETE api/expenses/:id
-router.delete('/:id', auth, async(req, res) => {
-    if(!validation.checkId(req.params.id)){
+router.delete('/:id', auth, async (req, res) => {
+    if (!validation.checkId(req.params.id)) {
         res.status(400).send("Not found");
         return;
     }
     const expense = await Expense.findById(req.params.id);
-    if(!expense){
+    if (!expense) {
         res.status(404).send("Expense not found");
         return;
     }
@@ -112,7 +115,6 @@ router.delete('/:id', auth, async(req, res) => {
 
     res.status(200).send(result);
 });
-
 
 
 module.exports = router;

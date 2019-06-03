@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/auth');
+const {User} = require('../models/user');
 const {Habit, validation} = require('../models/habit');
 
 
@@ -33,7 +34,7 @@ router.post('/', auth, async(req, res) => {
     }
 
     const habit = new Habit({
-        userId: req.user._id,
+        userId: req.body.userId,
         name: req.body.name,
         budget: req.body.budget,
         icon: req.body.icon
@@ -42,6 +43,12 @@ router.post('/', auth, async(req, res) => {
     const existingHabit = await Habit.findOne({name: req.body.name});
     if(existingHabit){
         return res.status(400).send(`A habit with the name "${habit.name}" already exists!`);
+    }
+
+    //  Check user exists
+    const user = await User.findById(habit.userId);
+    if (!user) {
+        return res.status(400).send("User doesn't exist");
     }
 
     const result = await habit.save();
