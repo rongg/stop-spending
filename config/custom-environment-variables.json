@@ -1,3 +1,4 @@
 {
-  "jwtPrivateKey": "stopspending_jwtPrivateKey"
+  "jwtPrivateKey": "stopspending_jwtPrivateKey",
+  "db": "stop-spending_db"
 }
