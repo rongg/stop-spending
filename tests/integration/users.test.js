@@ -44,7 +44,20 @@ describe('api/users', () => {
         it('should reject creating a user if it is invalid', async () => {
             const user = new User({ //  Missing name
                 email: "new.user@mail.com",
-                password: "12345"
+                password: "abc123"
+            });
+            const res = await request(server)
+                .post('/api/users')
+                .send(user)
+                .set('Accept', 'application/json');
+
+            expect(res.status).toBe(400);
+        });
+        it(`should reject creating a user if the password doesn't meet complexity requirements`, async () => {
+            const user = new User({
+                name: "new user",
+                email: "new.user@mail.com",
+                password: "missing_numeric"
             });
             const res = await request(server)
                 .post('/api/users')
@@ -58,7 +71,7 @@ describe('api/users', () => {
             let user = new User({
                 name: 'Dup User 1',
                 email: "new.user@mail.com",
-                password: "12345"
+                password: "abc123"
             });
             await request(server)
                 .post('/api/users')
@@ -78,7 +91,7 @@ describe('api/users', () => {
             const user = new User({
                 name: 'Valid User',
                 email: "valid.user@mail.com",
-                password: "12345"
+                password: "abc123"
             });
             const res = await request(server)
                 .post('/api/users')

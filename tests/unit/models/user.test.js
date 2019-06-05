@@ -1,4 +1,4 @@
-const {User, validate} = require('../../../models/user');
+const {User, validate, validatePassword} = require('../../../models/user');
 const jwt = require('jsonwebtoken');
 const config = require('config');
 const mongoose = require('mongoose');
@@ -59,14 +59,12 @@ describe('user.validate', () => {
             result = validate(user);
             expect(result.error).toBeNull();
         });
-        it('should be between 5 and 255 characters', () => {
+        it('should be between 5 and 50 characters', () => {
             user.email = "0@12";
             result = validate(user);
             expect(result.error).toBeTruthy();
 
-            user.email = "0@12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012" +
-                "3456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345" +
-                "67890123456789012345678901234567890123456789012345678901234567890";
+            user.email = "0@123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890";
             result = validate(user);
             expect(result.error).toBeTruthy();
         });
@@ -88,16 +86,34 @@ describe('user.validate', () => {
             result = validate(user);
             expect(result.error).toBeTruthy();
         });
-        it('should be between 5 and 255 characters', () => {
+        it('should be between 5 and 25 characters', () => {
             user.password = "123";
             result = validate(user);
             expect(result.error).toBeTruthy();
 
-            user.password = "0@12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012" +
-                "3456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345" +
-                "67890123456789012345678901234567890123456789012345678901234567890";
+            user.password = "012345678901234567890123456";
             result = validate(user);
             expect(result.error).toBeTruthy();
+        });
+        it('should satisfy the complexity requirements by having at least 1 lowercase letter and 1 numeric', () => {
+            result = validatePassword("abCD12#$");
+            expect(result.error).toBeNull();
+
+            result = validatePassword("abc123");
+            expect(result.error).toBeNull();
+
+            result = validatePassword("ABCDEFG");
+            expect(result.error).toBeTruthy();
+
+            result = validatePassword("abcDEFG");
+            expect(result.error).toBeTruthy();
+
+            result = validatePassword("123456");
+            expect(result.error).toBeTruthy();
+
+            result = validatePassword("!@#$%^&");
+            expect(result.error).toBeTruthy();
+
         });
         it('should be accepted if valid', () => {
             user.password = "12345";

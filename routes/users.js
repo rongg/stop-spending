@@ -1,10 +1,9 @@
 const _ = require('lodash');
-const PasswordComplexity = require('joi-password-complexity');
 const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/auth');
 const bcrypt = require('bcryptjs');
-const {validate, User, validateId} = require('../models/user');
+const {validate, User, validateId, validatePassword} = require('../models/user');
 
 //  GET api/users/me -- get the current user using auth token
 router.get('/me', auth, async (req, res) => {
@@ -18,9 +17,9 @@ router.post('/', async (req, res) => {
     const vResult = validate(req.body);
     if (vResult.error) return res.status(400).send(vResult.error);
     //  Validate password complexity
-    // Joi.validate(req.body.password, new PasswordComplexity(), (err, value) => {
-    //     return res.status(400).send(err);
-    // });
+    const cResult = validatePassword(req.body.password);
+    if(cResult.error) return res.status(400).send(cResult.error);
+
     //  Make sure not registered already
     let user = await User.findOne({email: req.body.email});
     if (user) return res.status(400).send('User already registered.');
