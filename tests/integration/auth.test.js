@@ -10,7 +10,7 @@ describe('/api/auth', () => {
             _id: new mongoose.Types.ObjectId().toHexString(),
             name: 'Test User',
             email: 'test.user@mail.com',
-            password: '12345'
+            password: 'abc123'
         });
         await request(server)
             .post("/api/users")
