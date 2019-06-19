@@ -78,6 +78,59 @@ describe('api/expenses', () => {
             expect(res.body[1].userId).toMatch(expense2.userId);
 
         });
+
+        it(`should get all expenses for a user's habit`, async() => {
+            const expense1 = new Expense({
+                userId: user._id,
+                name: 'Expense 1',
+                amount: 50,
+                habitId: habit._id,
+                habitName: habit.name
+            });
+            await expense1.save();
+            const expense2 = new Expense({
+                userId: user._id,
+                name: 'Expense 2',
+                amount: 99,
+                habitId: habit._id,
+                habitName: habit.name
+            });
+            await expense2.save();
+
+            const habit2 = new Habit({
+                name: 'Test Habit 2',
+                budget: 999
+            });
+
+            await habit.save();
+
+            const expense3 = new Expense({  //  should not be part of the response
+                userId: user._id,
+                name: 'Expense for different habit',
+                amount: 27,
+                habitId: habit2._id,
+                habitName: habit2.name
+            });
+            await expense3.save();
+
+            const res = await request(server)
+                .get(`/api/expenses?habitId=${habit._id}`)
+                .set('Accept', 'application/json')
+                .set('x-auth-token', token);
+
+            expect(res.status).toBe(200);
+            expect(res.body.length).toBe(2);
+
+            expect(res.body[0]._id).toMatch(expense1._id.toString());
+            expect(res.body[0].name).toMatch(expense1.name);
+            expect(res.body[0].amount).toBe(expense1.amount);
+            expect(res.body[0].userId).toMatch(expense1.userId);
+
+            expect(res.body[1]._id).toMatch(expense2._id.toString());
+            expect(res.body[1].name).toMatch(expense2.name);
+            expect(res.body[1].amount).toBe(expense2.amount);
+            expect(res.body[1].userId).toMatch(expense2.userId);
+        });
     });
 
     describe('GET /:id', () => {

@@ -6,13 +6,17 @@ const {User} = require('../models/user');
 const {Expense, validation} = require('../models/expense');
 
 
-//  GET  api/expenses -- all expenses
+//  GET  api/expenses -- get user expenses w/ specified filters
 router.get('/', auth, async (req, res) => {
-    const expenses = await Expense.find({userId: req.user._id});
+    let query = {userId: req.user._id};
+
+    if(req.query.habitId) query.habitId = req.query.habitId;    //  filter by habit
+
+    const expenses = await Expense.find(query);
     res.status(200).send(expenses);
 });
 
-// GET api/expenses/:id -- single
+// GET api/expenses/:id -- get a single expense
 router.get('/:id', auth, async (req, res) => {
     if (!validation.checkId(req.params.id)) {
         res.status(400).send("Invalid Id");
