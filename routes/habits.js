@@ -40,7 +40,7 @@ router.post('/', auth, async(req, res) => {
         icon: req.body.icon
     });
 
-    const existingHabit = await Habit.findOne({name: req.body.name});
+    const existingHabit = await Habit.findOne({userId: habit.userId, name: req.body.name});
     if(existingHabit){
         return res.status(400).send(`A habit with the name "${habit.name}" already exists!`);
     }

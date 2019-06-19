@@ -118,7 +118,7 @@ describe('api/habits', () => {
             expect(res.status).toBe(400);
         });
 
-        it(`should reject creating a habit if it's name already exists`, async () => {
+        it(`should reject creating a habit if it's name already exists for that user`, async () => {
             const habit = new Habit({
                 name: "Duplicate habit",
                 userId: user._id,
