@@ -7,7 +7,7 @@ const expenseSchema = new mongoose.Schema({
     name: {type: String, required: true, minLength: minLengthName, maxLength: maxLengthName},
     amount: {type: Number, required: true, min: 1, max: 1000000000},
     date: {type: Date, default: Date.now},
-    habitId: {type: String, required: true},
+    habitId: {type: String, max: 25},
 });
 
 const Expense = mongoose.model('Expense', expenseSchema);
@@ -20,7 +20,7 @@ const validation = {
             name: Joi.string().min(minLengthName).max(maxLengthName).required(),
             amount: Joi.number().integer().min(1).max(1000000000).required(),
             date: Joi.date(),
-            habitId: Joi.string().max(25).required(),
+            habitId: Joi.string().max(25),
         };
 
         return Joi.validate(expense, jExpenseSchema);

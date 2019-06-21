@@ -33,17 +33,19 @@ router.get('/:id', auth, async (req, res) => {
 // POST api/expenses -- create
 router.post('/', auth, async (req, res) => {
     //  Validate body
-    if (!validation.checkId(req.body.habitId)) {
+    if (req.body.habitId && !validation.checkId(req.body.habitId)) {
         return res.status(400).send("Invalid Habit Id");
     }
     const vResult = validation.check(req.body);
     if (vResult.error) {
         return res.status(400).send(vResult.error);
     }
-    //  Check habit exists
-    const habit = await Habit.findById(req.body.habitId);
-    if (!habit) {
-        return res.status(404).send("Habit not found for Id");
+    //  Check habit exists if linking to it
+    if(req.body.habitId) {
+        const habit = await Habit.findById(req.body.habitId);
+        if (!habit) {
+            return res.status(404).send("Habit not found for Id");
+        }
     }
     //  Check user exists
     const user = await User.findById(req.body.userId);
@@ -55,7 +57,7 @@ router.post('/', auth, async (req, res) => {
         userId: req.body.userId,
         name: req.body.name,
         amount: req.body.amount,
-        habitId: req.body.habitId
+        habitId: req.body.habitId || ''
     });
 
     const result = await expense.save();
@@ -80,21 +82,23 @@ router.put('/:id', auth, async (req, res) => {
         res.status(400).send(vResult.error);
         return;
     }
-    //  Check habit exists
-    if (!validation.checkId(req.body.habitId)) {
+    //  Check habit Id is valid and exists if linking to it
+    if (req.body.habitId && !validation.checkId(req.body.habitId)) {
         res.status(400).send("Invalid Habit Id");
         return;
     }
-    const habit = await Habit.findById(req.body.habitId);
-    if (!habit) {
-        res.status(404).send("Habit not found for Id");
-        return;
+    if(req.body.habitId) {
+        const habit = await Habit.findById(req.body.habitId);
+        if (!habit) {
+            res.status(404).send("Habit not found for Id");
+            return;
+        }
     }
     //  Update and return modified
     expense.name = req.body.name;
     expense.amount = req.body.amount;
     expense.date = req.body.date;
-    expense.habitId = req.body.habitId;
+    expense.habitId = req.body.habitId || '';
 
     const result = await expense.save();
 

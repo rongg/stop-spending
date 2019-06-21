@@ -1,6 +1,7 @@
 const request = require('supertest');
 const {Habit} = require('../../models/habit');
 const {User} = require('../../models/user');
+const {Expense} = require('../../models/expense');
 const mongoose = require('mongoose');
 
 let server;
@@ -292,26 +293,52 @@ describe('api/habits', () => {
             expect(res.text).toBe('Habit not found')
         });
 
-        it('should delete the habit', async () => {
+        it(`should delete the habit and set all it's expenses habitId to be an empty string`, async () => {
             const habit = new Habit({
                 name: "New Habit",
                 userId: user._id,
                 budget: 2000,
                 icon: "icons.com"
             });
+
             const res1 = await request(server)
                 .post("/api/habits")
                 .send(habit)
                 .set("x-auth-token", token)
                 .set("Accept", "application/json");
 
+            const habitId = res1.body._id;
+            const expense1 = new Expense({
+                userId: user._id,
+                name: "Expense 1",
+                amount: 100,
+                date: new Date(),
+                habitId: habitId
+            });
+            const expense2 = new Expense({
+                userId: user._id,
+                name: "Expense 2",
+                amount: 50,
+                date: new Date(),
+                habitId: habitId
+            });
+
+            await expense1.save();
+            await expense2.save();
+
             const res2 = await request(server)
-                .delete("/api/habits/" + res1.body._id)
+                .delete("/api/habits/" + habitId)
                 .set("x-auth-token", token)
                 .set("Accept", "application/json");
 
+
+            const expense1Updated = await Expense.findById(expense1._id);
+            const expense2Updated = await Expense.findById(expense2._id);
+
             expect(res2.status).toBe(200);
             expect(res2.body.deletedCount).toBe(1);
+            expect(expense1Updated.habitId).toBe('');
+            expect(expense2Updated.habitId).toBe('');
         });
     });
 

@@ -88,12 +88,6 @@ describe('expense.validation.check', () => {
         });
     });
     describe('habitId', () => {
-        it('should exist', () => {
-            const expense = Object.assign({}, validExpense);
-            delete expense.habitId;
-            result = validation.check(expense);
-            expect(result.error).toBeTruthy();
-        });
         it('should be a string', () => {
             const expense = Object.assign({}, validExpense);
             expense.habitId = 12345.5;
