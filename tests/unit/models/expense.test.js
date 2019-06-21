@@ -6,8 +6,7 @@ describe('expense.validation.check', () => {
         name: "New Expense",
         amount: 100,
         date: new Date(),
-        habitId: "12345",
-        habitName: 'Habit'
+        habitId: "12345"
     };
     let result;
     describe('userId', () => {
@@ -104,29 +103,6 @@ describe('expense.validation.check', () => {
         it('should be less than 25 characters', () => {
             const expense = Object.assign({}, validExpense);
             expense.habitId = "12345678901234567890123456789";
-            result = validation.check(expense);
-            expect(result.error).toBeTruthy();
-        });
-    });
-    describe('habitName', () => {
-        it('should exist', () => {
-            const expense = Object.assign({}, validExpense);
-            delete expense.habitName;
-            result = validation.check(expense);
-            expect(result.error).toBeTruthy();
-        });
-        it('should be a string', () => {
-            const expense = Object.assign({}, validExpense);
-            expense.habitId = 12345.5;
-            result = validation.check(expense);
-            expect(result.error).toBeTruthy();
-        });
-        it('should be between 3 and 50 characters', () => {
-            const expense = Object.assign({}, validExpense);
-            expense.habitName = "ab";
-            result = validation.check(expense);
-            expect(result.error).toBeTruthy();
-            expense.habitName = "abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijFAIL";
             result = validation.check(expense);
             expect(result.error).toBeTruthy();
         });
