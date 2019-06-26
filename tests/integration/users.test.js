@@ -154,7 +154,7 @@ describe('api/users', () => {
             expect(res.status).toBe(404);
             expect(res.text).toBe("User not found");
         });
-        it('should update the name and email but not the password', async () => {
+        it('should update the name but not the email and password', async () => {
             let body = {
                 name: 'Updated',
                 email: 'update@mail.com',
@@ -167,7 +167,7 @@ describe('api/users', () => {
 
             expect(res.status).toBe(200);
             expect(res.body.name).toBe(body.name);
-            expect(res.body.email).toBe(body.email);
+            expect(res.body.email === body.email).toBe(false);
             expect(res.body.password === body.password).toBe(false);
         });
     });

@@ -53,7 +53,6 @@ router.put('/:id', auth, async (req, res) => {
     }
     //  Update and return modified
     user.name = req.body.name;
-    user.email = req.body.email;
 
     const result = await user.save();
 
