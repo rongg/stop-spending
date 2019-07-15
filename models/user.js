@@ -8,7 +8,8 @@ const PasswordComplexity = require('joi-password-complexity');
 const userSchema = new mongoose.Schema({
     name: {type: String, minLength: 3, maxLength: 50, required: true},
     email: {type: String, minLength: 5, maxLength: 50, required: true, unique: true},
-    password: {type: String, minLength: 5, maxLength: 25, required: true}
+    password: {type: String, minLength: 5, maxLength: 25, required: true},
+    isVerified: {type: Boolean, default: false}
 });
 
 userSchema.methods.generateAuthToken = function () {
@@ -23,7 +24,8 @@ function validateUser(user) {
         _id: Joi.string(),
         name: Joi.string().min(3).max(50).required(),
         email: Joi.string().min(5).max(50).required().email(),
-        password: Joi.string().min(PASSWORD_MIN).max(PASSWORD_MAX).required()
+        password: Joi.string().min(PASSWORD_MIN).max(PASSWORD_MAX).required(),
+        isVerified: Joi.boolean()
     };
 
     return Joi.validate(user, schema);
