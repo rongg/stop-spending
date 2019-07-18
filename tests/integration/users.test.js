@@ -127,7 +127,7 @@ describe('api/users', () => {
     });
 
 
-    describe('GET /verify/:id', () => {
+    describe('POST /verify/:id', () => {
         it('should verify the user with the supplied token', async () => {
             const user = new User({
                 name: 'Valid User',
@@ -140,7 +140,7 @@ describe('api/users', () => {
             await verifyToken.save();
 
             const res = await request(server)
-                .get('/api/users/verify/' + verifyToken.token)
+                .post('/api/users/verify/' + verifyToken.token)
                 .send();
 
             expect(res.status).toBe(200);
@@ -162,7 +162,7 @@ describe('api/users', () => {
             await verifyToken.delete();
 
             const res = await request(server)
-                .get('/api/users/verify/' + verifyToken.token)
+                .post('/api/users/verify/' + verifyToken.token)
                 .send();
 
             expect(res.status).toBe(400);
@@ -183,7 +183,7 @@ describe('api/users', () => {
             await verifyToken.save();
 
             let res = await request(server)
-                .get('/api/users/verify/' + verifyToken.token)
+                .post('/api/users/verify/' + verifyToken.token)
                 .send();
 
             expect(res.status).toBe(400);
@@ -193,7 +193,7 @@ describe('api/users', () => {
             await user.delete();
 
             res = await request(server)
-                .get('/api/users/verify/' + verifyToken.token)
+                .post('/api/users/verify/' + verifyToken.token)
                 .send();
 
             expect(res.status).toBe(400);
