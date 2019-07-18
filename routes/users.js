@@ -52,7 +52,7 @@ router.post('/', async (req, res) => {
         html: '<a href="' + confirmUrl + '">Verify</a>',
     };
     //  Don't send when testing
-    if(process.env.NODE_ENV !== 'test') sgMail.send(msg);
+    sgMail.send(msg);
 
     const token = user.generateAuthToken();
 
