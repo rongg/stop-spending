@@ -1,5 +1,6 @@
 const request = require('supertest');
 const {User} = require('../../models/user');
+const {VerifyToken} = require('../../models/verify_token');
 const mongoose = require('mongoose');
 
 
@@ -9,6 +10,7 @@ describe('api/users', () => {
     });
     afterEach(async () => {
         await User.deleteMany({});
+        await VerifyToken.deleteMany({});
         server.close();
     });
 
@@ -103,6 +105,105 @@ describe('api/users', () => {
             expect(res.body.name).toMatch(user.name);
             expect(res.body.email).toMatch(user.email);
             expect(res.body.password).toBeUndefined();
+        });
+
+        it('should create a verification token when creating a new user', async() => {
+            const user = new User({
+                name: 'Valid User',
+                email: "valid.user@mail.com",
+                password: "abc123"
+            });
+            const res = await request(server)
+                .post('/api/users')
+                .send(user)
+                .set('Accept', 'application/json');
+
+            expect(res.status).toBe(200);
+
+            const token = await VerifyToken.findOne({_userId: res.body._id});
+
+            expect(token._userId.toString()).toBe(res.body._id);
+        });
+    });
+
+
+    describe('GET /verify/:id', () => {
+        it('should verify the user with the supplied token', async () => {
+            const user = new User({
+                name: 'Valid User',
+                email: "valid.user@mail.com",
+                password: "abc123"
+            });
+
+            await user.save();
+            const verifyToken = new VerifyToken({_userId: user._id, token: user.generateVerifyToken()});
+            await verifyToken.save();
+
+            const res = await request(server)
+                .get('/api/users/verify/' + verifyToken.token)
+                .send();
+
+            expect(res.status).toBe(200);
+            expect(res.body._id).toBe(user._id.toString());
+            expect(res.body.isVerified).toBe(true);
+        });
+
+        it('should reject verification if the token does not exists', async() => {
+            const user = new User({
+                name: 'Valid User',
+                email: "valid.user@mail.com",
+                password: "abc123"
+            });
+
+            await user.save();
+            const verifyToken = new VerifyToken({_userId: user._id, token: user.generateVerifyToken()});
+            await verifyToken.save();
+            //  Simulate expiration by deleting token
+            await verifyToken.delete();
+
+            const res = await request(server)
+                .get('/api/users/verify/' + verifyToken.token)
+                .send();
+
+            expect(res.status).toBe(400);
+            expect(res.body.result).toBe('not-verified');
+            expect(res.body.msg).toBe('We were unable to find a valid token. Your token may have expired.');
+        });
+
+        it('should reject verification if the user is already verified or if the user does not exist', async() => {
+            const user = new User({
+                name: 'Valid User',
+                email: "valid.user@mail.com",
+                password: "abc123",
+                isVerified: true
+            });
+
+            await user.save();
+            const verifyToken = new VerifyToken({_userId: user._id, token: user.generateVerifyToken()});
+            await verifyToken.save();
+
+            let res = await request(server)
+                .get('/api/users/verify/' + verifyToken.token)
+                .send();
+
+            expect(res.status).toBe(400);
+            expect(res.body.result).toBe('already-verified');
+            expect(res.body.msg).toBe('This user has already been verified.');
+
+            await user.delete();
+
+            res = await request(server)
+                .get('/api/users/verify/' + verifyToken.token)
+                .send();
+
+            expect(res.status).toBe(400);
+            expect(res.body.msg).toBe('We were unable to find a user for this token.');
+        });
+    });
+
+    describe('GET /verify/resend', () => {
+        it('should create a new verification token', async () => {
+
         });
     });
 
