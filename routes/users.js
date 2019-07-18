@@ -45,7 +45,7 @@ router.post('/', async (req, res) => {
     sgMail.setApiKey(process.env.SENDGRID_API_KEY);
     const confirmUrl = "https://stop-spending.herokuapp.com/api/users/verify/" + verifyToken.token;
     const msg = {
-        to: user.email,
+        to: req.body.email,
         from: 'ronald.gayda.jr@gmail.com',
         subject: 'Your Account Has Been Created',
         text: 'Hi, ' + user.name + '. Welcome to Stop Spending. Please confirm your account below.',
@@ -53,7 +53,6 @@ router.post('/', async (req, res) => {
     };
     //  Don't send when testing
     if(process.env.NODE_ENV !== 'test') sgMail.send(msg);
-    sgMail.send(msg);
 
     const token = user.generateAuthToken();
 
