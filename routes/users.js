@@ -43,7 +43,7 @@ router.post('/', async (req, res) => {
     // using Twilio SendGrid's v3 Node.js Library
     // https://github.com/sendgrid/sendgrid-nodejs
     sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-    const confirmUrl = "https://stop-spending-app.herokuapp.com/api/account/verify/" + verifyToken.token;
+    const confirmUrl = "https://stop-spending-app.herokuapp.com/account/verify/" + verifyToken.token;
     const msg = {
         to: req.body.email,
         from: 'ronald.gayda.jr@gmail.com',
