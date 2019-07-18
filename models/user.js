@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const config = require('config');
 const PasswordComplexity = require('joi-password-complexity');
+const crypto = require('crypto');
 
 
 const userSchema = new mongoose.Schema({
@@ -14,6 +15,10 @@ const userSchema = new mongoose.Schema({
 
 userSchema.methods.generateAuthToken = function () {
     return jwt.sign({_id: this._id, name: this.name, email: this.email}, config.get('jwtPrivateKey'));
+};
+
+userSchema.methods.generateVerifyToken = function(){
+    return crypto.randomBytes(16).toString('hex');
 };
 
 const User = mongoose.model("User", userSchema);
