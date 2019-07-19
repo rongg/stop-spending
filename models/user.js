@@ -17,9 +17,9 @@ userSchema.methods.generateAuthToken = function () {
     return jwt.sign({_id: this._id, name: this.name, email: this.email, isVerified: this.isVerified}, config.get('jwtPrivateKey'));
 };
 
-userSchema.methods.generateVerifyToken = function(){
+function generateVerificationToken(){
     return crypto.randomBytes(16).toString('hex');
-};
+}
 
 const User = mongoose.model("User", userSchema);
 const PASSWORD_MIN = 5, PASSWORD_MAX = 25;
@@ -64,3 +64,4 @@ exports.User = User;
 exports.validate = validateUser;
 exports.validatePassword = validatePassword;
 exports.validateId = mongoose.Types.ObjectId.isValid;
+exports.generateVerificationToken = generateVerificationToken;

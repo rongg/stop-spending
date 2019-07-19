@@ -1,5 +1,5 @@
 const request = require('supertest');
-const {User} = require('../../models/user');
+const {User, generateVerificationToken} = require('../../models/user');
 const {VerifyToken} = require('../../models/verify_token');
 const mongoose = require('mongoose');
 
@@ -136,7 +136,7 @@ describe('api/users', () => {
             });
 
             await user.save();
-            const verifyToken = new VerifyToken({_userId: user._id, token: user.generateVerifyToken()});
+            const verifyToken = new VerifyToken({_userId: user._id, token: generateVerificationToken()});
             await verifyToken.save();
 
             const res = await request(server)
@@ -156,7 +156,7 @@ describe('api/users', () => {
             });
 
             await user.save();
-            const verifyToken = new VerifyToken({_userId: user._id, token: user.generateVerifyToken()});
+            const verifyToken = new VerifyToken({_userId: user._id, token: generateVerificationToken()});
             await verifyToken.save();
             //  Simulate expiration by deleting token
             await verifyToken.delete();
@@ -179,7 +179,7 @@ describe('api/users', () => {
             });
 
             await user.save();
-            const verifyToken = new VerifyToken({_userId: user._id, token: user.generateVerifyToken()});
+            const verifyToken = new VerifyToken({_userId: user._id, token: generateVerificationToken()});
             await verifyToken.save();
 
             let res = await request(server)
@@ -201,9 +201,32 @@ describe('api/users', () => {
         });
     });
 
-    describe('GET /verify/resend', () => {
+    describe('POST /resend/verification', () => {
+        it('should reject an unauthenticated request', async() => {
+            const res = await request(server).post('/api/users/resend/verification');
+            expect(res.status).toBe(401);
+        });
         it('should create a new verification token', async () => {
+            const user = new User({
+                name: 'Valid User',
+                email: "valid.user@mail.com",
+                password: "abc123"
+            });
 
+            await user.save();
+
+            const authToken = user.generateAuthToken();
+
+            const res = await request(server)
+                .post('/api/users/resend/verification')
+                .set('Accept', 'application/json')
+                .set('x-auth-token', authToken);
+
+            expect(res.status).toBe(200);
+
+            const verifyToken = await VerifyToken.findOne({_userId: user._id});
+
+            expect(verifyToken._userId.toString()).toBe(user._id.toString());
         });
     });
 

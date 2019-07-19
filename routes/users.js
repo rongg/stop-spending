@@ -4,7 +4,7 @@ const router = express.Router();
 const auth = require('../middleware/auth');
 const bcrypt = require('bcryptjs');
 const sgMail = require('@sendgrid/mail');
-const {validate, User, validateId, validatePassword} = require('../models/user');
+const {validate, User, validateId, validatePassword, generateVerificationToken} = require('../models/user');
 
 const {VerifyToken} = require('../models/verify_token');
 
@@ -36,7 +36,7 @@ router.post('/', async (req, res) => {
     await user.save();
 
     /*  Email confirmation */
-    const verifyToken = new VerifyToken({_userId: user._id, token: user.generateVerifyToken()});
+    const verifyToken = new VerifyToken({_userId: user._id, token: generateVerificationToken()});
     await verifyToken.save();
 
     // Send the email
@@ -85,10 +85,30 @@ router.post('/verify/:token', async (req, res) => {
     res.status(200).send(_.pick(user, ['_id', 'name', 'email', 'isVerified']));
 });
 
-// // POST api/users/verify/resend
-// router.post('/verify/resend', async (req, res) => {
-//
-// });
+// // POST api/users/resend/verification
+router.post('/resend/verification', auth, async (req, res) => {
+    /*  Email confirmation */
+    const user = req.user;
+    const verifyToken = new VerifyToken({_userId: user._id, token: generateVerificationToken()});
+    await verifyToken.save();
+
+    // Send the email
+    // using Twilio SendGrid's v3 Node.js Library
+    // https://github.com/sendgrid/sendgrid-nodejs
+    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+    const confirmUrl = "https://stop-spending-app.herokuapp.com/account/verify/" + verifyToken.token;
+    const msg = {
+        to: user.email,
+        from: 'ronald.gayda.jr@gmail.com',
+        subject: 'Account Verification',
+        text: 'Hi, ' + user.name + '. Welcome to Stop Spending. Please confirm your account below.',
+        html: '<a href="' + confirmUrl + '">Verify</a>',
+    };
+    //  Don't send when testing
+    if (process.env.NODE_ENV === 'production') sgMail.send(msg);
+
+    res.status(200).send('An email has been sent to ' + user.email);
+});
 
 // PUT api/users/:id -- update a user
 router.put('/:id', auth, async (req, res) => {
