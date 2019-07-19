@@ -60,8 +60,17 @@ function validatePassword(password){
     return Joi.validate(password, new PasswordComplexity(options));
 }
 
+function validateEmail(email){
+    const schema = {
+        email: Joi.string().min(5).max(50).required().email(),
+    };
+
+    return Joi.validate({email}, schema);
+}
+
 exports.User = User;
 exports.validate = validateUser;
 exports.validatePassword = validatePassword;
+exports.validateEmail = validateEmail;
 exports.validateId = mongoose.Types.ObjectId.isValid;
 exports.generateVerificationToken = generateVerificationToken;

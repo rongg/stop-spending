@@ -107,7 +107,7 @@ describe('api/users', () => {
             expect(res.body.password).toBeUndefined();
         });
 
-        it('should create a verification token when creating a new user', async() => {
+        it('should create a verification token when creating a new user', async () => {
             const user = new User({
                 name: 'Valid User',
                 email: "valid.user@mail.com",
@@ -126,6 +126,116 @@ describe('api/users', () => {
         });
     });
 
+    describe('POST /reset/password', () => {
+        it('should reject an invalid email', async () => {
+            const res = await request(server)
+                .post('/api/users/reset/password')
+                .send({email: 'blah'})
+                .set('Accept', 'application/json');
+
+            expect(res.status).toBe(400);
+            expect(res.body.name).toBe('ValidationError');
+        });
+        it('should return 400 if the user does not exist', async () => {
+
+            const res = await request(server)
+                .post('/api/users/reset/password')
+                .send({email: 'blah@mail.com'})
+                .set('Accept', 'application/json');
+
+            expect(res.status).toBe(400);
+            expect(res.text).toBe('No account for email provided.')
+        });
+        it('should create a verification token for the user', async () => {
+            const user = new User({
+                name: 'Valid User',
+                email: "valid.user@mail.com",
+                password: "abc123"
+            });
+            await user.save();
+            const res = await request(server)
+                .post('/api/users/reset/password')
+                .send({email: user.email})
+                .set('Accept', 'application/json');
+
+            expect(res.status).toBe(200);
+
+            const token = await VerifyToken.findOne({_userId: user._id.toString()});
+
+            expect(token._userId.toString()).toBe(user._id.toString());
+        });
+    });
+
+    describe('POST /reset/password/:token', () => {
+        it('should reject an invalid or expired token', async () => {
+            const res = await request(server)
+                .post('/api/users/reset/password/' + generateVerificationToken())
+                .send({password: 'abc123'})
+                .set('Accept', 'application/json');
+            expect(res.status).toBe(400);
+            expect(res.body.msg).toBe('We were unable to find a valid token. Your token may have expired.');
+        });
+        it('should reject an invalid password', async () => {
+            const user = new User({
+                name: 'Valid User',
+                email: "valid.user@mail.com",
+                password: "abc123"
+            });
+            await user.save();
+
+            const verifyToken = new VerifyToken({_userId: user._id, token: generateVerificationToken()});
+            await verifyToken.save();
+
+            const res = await request(server)
+                .post('/api/users/reset/password/' + verifyToken.token)
+                .send({userId: user._id, password: 'abcdefg'})
+                .set('Accept', 'application/json');
+
+            expect(res.status).toBe(400);
+            expect(res.body.name).toBe('ValidationError');
+        });
+        it('should return 400 if the user does not exist', async () => {
+            const user = new User({
+                name: 'Valid User',
+                email: "valid.user@mail.com",
+                password: "abc123"
+            });
+            await user.save();
+
+            const verifyToken = new VerifyToken({_userId: user._id, token: generateVerificationToken()});
+            await verifyToken.save();
+
+            await user.delete();
+
+            const res = await request(server)
+                .post('/api/users/reset/password/' + verifyToken.token)
+                .send({userId: user._id, password: 'abc123'})
+                .set('Accept', 'application/json');
+
+            expect(res.status).toBe(400);
+            expect(res.text).toBe('User does not exist.');
+        });
+        it('should reset the password', async () => {
+            const user = new User({
+                name: 'Valid User',
+                email: "valid.user@mail.com",
+                password: "abc123"
+            });
+            await user.save();
+
+            const verifyToken = new VerifyToken({_userId: user._id, token: generateVerificationToken()});
+            await verifyToken.save();
+
+            const res = await request(server)
+                .post('/api/users/reset/password/' + verifyToken.token)
+                .send({userId: user._id, password: 'new123'})
+                .set('Accept', 'application/json');
+
+            console.log(res.text);
+            expect(res.status).toBe(200);
+            expect(res.text).toBe('Your password has been reset! Please log in.');
+        });
+    });
 
     describe('POST /verify/:id', () => {
         it('should verify the user with the supplied token', async () => {
@@ -148,7 +258,7 @@ describe('api/users', () => {
             expect(res.body.isVerified).toBe(true);
         });
 
-        it('should reject verification if the token does not exists', async() => {
+        it('should reject verification if the token does not exists', async () => {
             const user = new User({
                 name: 'Valid User',
                 email: "valid.user@mail.com",
@@ -170,7 +280,7 @@ describe('api/users', () => {
             expect(res.body.msg).toBe('We were unable to find a valid token. Your token may have expired.');
         });
 
-        it('should reject verification if the user is already verified or if the user does not exist', async() => {
+        it('should reject verification if the user is already verified or if the user does not exist', async () => {
             const user = new User({
                 name: 'Valid User',
                 email: "valid.user@mail.com",
@@ -202,7 +312,7 @@ describe('api/users', () => {
     });
 
     describe('POST /resend/verification', () => {
-        it('should reject an unauthenticated request', async() => {
+        it('should reject an unauthenticated request', async () => {
             const res = await request(server).post('/api/users/resend/verification');
             expect(res.status).toBe(401);
         });
@@ -297,7 +407,8 @@ describe('api/users', () => {
     });
 
     //  TO DO : Deleting a User
-    describe('DELETE /', () => {let token, user;
+    describe('DELETE /', () => {
+        let token, user;
         beforeEach(async () => {
             user = new User({
                 name: "New User",

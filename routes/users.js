@@ -4,7 +4,7 @@ const router = express.Router();
 const auth = require('../middleware/auth');
 const bcrypt = require('bcryptjs');
 const sgMail = require('@sendgrid/mail');
-const {validate, User, validateId, validatePassword, generateVerificationToken} = require('../models/user');
+const {validate, User, validateId, validatePassword, generateVerificationToken, validateEmail} = require('../models/user');
 
 const {VerifyToken} = require('../models/verify_token');
 
@@ -52,7 +52,7 @@ router.post('/', async (req, res) => {
         html: '<a href="' + confirmUrl + '">Verify</a>',
     };
     //  Don't send when testing
-    if(process.env.NODE_ENV === 'production') sgMail.send(msg);
+    if (process.env.NODE_ENV === 'production') sgMail.send(msg);
 
     const token = user.generateAuthToken();
 
@@ -108,6 +108,60 @@ router.post('/resend/verification', auth, async (req, res) => {
     if (process.env.NODE_ENV === 'production') sgMail.send(msg);
 
     res.status(200).send('An email has been sent to ' + user.email);
+});
+
+// // POST api/users/reset/password
+router.post('/reset/password', async (req, res) => {
+    const cResult = validateEmail(req.body.email);
+    if (cResult.error) return res.status(400).send(cResult.error);
+
+    const user = await User.findOne({email: req.body.email});
+
+    if (!user) return res.status(400).send('No account for email provided.');
+
+    const verifyToken = new VerifyToken({_userId: user._id, token: generateVerificationToken()});
+    await verifyToken.save();
+
+    // Send the email
+    // using Twilio SendGrid's v3 Node.js Library
+    // https://github.com/sendgrid/sendgrid-nodejs
+    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+    const confirmUrl = "https://stop-spending-app.herokuapp.com/account/" + user._id + "/reset/password/" + verifyToken.token;
+    const msg = {
+        to: user.email,
+        from: 'ronald.gayda.jr@gmail.com',
+        subject: 'Reset your password',
+        text: 'Hi, ' + user.name + '. Please use the link below to reset your password.',
+        html: '<a href="' + confirmUrl + '">Verify</a>',
+    };
+    //  Don't send when testing
+    if (process.env.NODE_ENV === 'production') sgMail.send(msg);
+
+    res.status(200).send('An email has been sent to ' + user.email);
+});
+
+// // POST api/users/:id/reset/password/:token
+router.post('/reset/password/:token', async (req, res) => {
+    // Find a matching token
+    const verifyToken = await VerifyToken.findOne({token: req.params.token});
+
+    if (!verifyToken) return res.status(400).send({
+        result: 'not-verified',
+        msg: 'We were unable to find a valid token. Your token may have expired.'
+    });
+
+    const cResult = validatePassword(req.body.password);
+    if (cResult.error) return res.status(400).send(cResult.error);
+
+    const user = await User.findById(req.body.userId);
+
+    if (!user) return res.status(400).send('User does not exist.');
+
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(req.body.password, salt);
+    await user.save();
+
+    res.status(200).send('Your password has been reset! Please log in.');
 });
 
 // PUT api/users/:id -- update a user
