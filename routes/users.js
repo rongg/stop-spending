@@ -59,7 +59,7 @@ router.post('/', async (req, res) => {
     res.header('x-auth-token', token).status(200).send(_.pick(user, ['_id', 'name', 'email']));
 });
 
-// GET api/users/verify/:token
+// POST api/users/verify/:token
 router.post('/verify/:token', async (req, res) => {
     // Find a matching token
     const verifyToken = await VerifyToken.findOne({token: req.params.token});
@@ -81,6 +81,8 @@ router.post('/verify/:token', async (req, res) => {
     // Verify and save the user
     user.isVerified = true;
     await user.save();
+
+    await verifyToken.delete();
 
     res.status(200).send(_.pick(user, ['_id', 'name', 'email', 'isVerified']));
 });

@@ -241,7 +241,7 @@ describe('api/users', () => {
     });
 
     describe('POST /verify/:id', () => {
-        it('should verify the user with the supplied token', async () => {
+        it('should verify the user with the supplied token and delete the verification token', async () => {
             const user = new User({
                 name: 'Valid User',
                 email: "valid.user@mail.com",
@@ -249,16 +249,20 @@ describe('api/users', () => {
             });
 
             await user.save();
-            const verifyToken = new VerifyToken({_userId: user._id, token: generateVerificationToken()});
+            let verifyToken = new VerifyToken({_userId: user._id, token: generateVerificationToken()});
             await verifyToken.save();
 
             const res = await request(server)
                 .post('/api/users/verify/' + verifyToken.token)
                 .send();
 
+
+            verifyToken = await VerifyToken.findById(verifyToken._id);
+
             expect(res.status).toBe(200);
             expect(res.body._id).toBe(user._id.toString());
             expect(res.body.isVerified).toBe(true);
+            expect(verifyToken).toBeNull();
         });
 
         it('should reject verification if the token does not exists', async () => {
