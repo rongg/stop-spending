@@ -215,7 +215,7 @@ describe('api/users', () => {
             expect(res.status).toBe(400);
             expect(res.text).toBe('User does not exist.');
         });
-        it('should reset the password', async () => {
+        it('should reset the password and delete the verification token', async () => {
             const user = new User({
                 name: 'Valid User',
                 email: "valid.user@mail.com",
@@ -223,7 +223,7 @@ describe('api/users', () => {
             });
             await user.save();
 
-            const verifyToken = new VerifyToken({_userId: user._id, token: generateVerificationToken()});
+            let verifyToken = new VerifyToken({_userId: user._id, token: generateVerificationToken()});
             await verifyToken.save();
 
             const res = await request(server)
@@ -231,9 +231,12 @@ describe('api/users', () => {
                 .send({userId: user._id, password: 'new123'})
                 .set('Accept', 'application/json');
 
+            verifyToken = await VerifyToken.findById(verifyToken._id);
+
             console.log(res.text);
             expect(res.status).toBe(200);
             expect(res.text).toBe('Your password has been reset! Please log in.');
+            expect(verifyToken).toBeNull();
         });
     });
 

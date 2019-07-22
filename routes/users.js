@@ -161,6 +161,8 @@ router.post('/reset/password/:token', async (req, res) => {
     user.password = await bcrypt.hash(req.body.password, salt);
     await user.save();
 
+    await verifyToken.delete();
+
     res.status(200).send('Your password has been reset! Please log in.');
 });
 
