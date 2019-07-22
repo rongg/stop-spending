@@ -6,11 +6,17 @@ const {User} = require('../models/user');
 const {Expense, validation} = require('../models/expense');
 
 
-//  GET  api/expenses -- get user expenses w/ specified filters
+//  GET  api/expenses -- get user expenses for date range
 router.get('/', auth, async (req, res) => {
     let query = {userId: req.user._id};
 
     if(req.query.habitId) query.habitId = req.query.habitId;    //  filter by habit
+
+    if(req.query.start && req.query.end) {
+        query.date = {$gte: req.query.start, $lte: req.query.end};
+    }else{
+        return res.status(400).send('Start and end date is required.');
+    }
 
     const expenses = await Expense.find(query);
     res.status(200).send(expenses);

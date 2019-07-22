@@ -40,6 +40,15 @@ describe('api/expenses', () => {
             const res = await request(server).get('/api/expenses');
             expect(res.status).toBe(401);
         });
+        it('should reject a query that does not specify start and end dates', async() => {
+            const res = await request(server)
+                .get('/api/expenses')
+                .set('Accept', 'application/json')
+                .set('x-auth-token', token);
+
+            expect(res.status).toBe(400);
+            expect(res.text).toBe('Start and end date is required.');
+        });
         it('should return all expenses for a user', async () => {
             const expense1 = new Expense({
                 userId: user._id,
@@ -57,8 +66,14 @@ describe('api/expenses', () => {
             });
             await expense2.save();
 
+            const start = expense1.date;
+            const end = expense2.date;
+            start.setDate(start.getDate() - 1);
+            end.setDate(end.getDate() + 1);
+
+            const query = "?start=" + start + '&end=' + end;
             const res = await request(server)
-                .get('/api/expenses')
+                .get('/api/expenses' + query)
                 .set('Accept', 'application/json')
                 .set('x-auth-token', token);
 
@@ -108,8 +123,16 @@ describe('api/expenses', () => {
             });
             await expense3.save();
 
+
+            const start = expense1.date;
+            const end = expense3.date;
+            start.setDate(start.getDate() - 1);
+            end.setDate(end.getDate() + 1);
+
+            const query = `?habitId=${habit._id}&start=` + start + '&end=' + end;
+
             const res = await request(server)
-                .get(`/api/expenses?habitId=${habit._id}`)
+                .get(`/api/expenses` + query)
                 .set('Accept', 'application/json')
                 .set('x-auth-token', token);
 
