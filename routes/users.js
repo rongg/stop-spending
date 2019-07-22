@@ -132,7 +132,7 @@ router.post('/reset/password', async (req, res) => {
         from: 'ronald.gayda.jr@gmail.com',
         subject: 'Reset your password',
         text: 'Hi, ' + user.name + '. Please use the link below to reset your password.',
-        html: '<a href="' + confirmUrl + '">Verify</a>',
+        html: '<a href="' + confirmUrl + '">Reset Password</a>',
     };
     //  Don't send when testing
     if (process.env.NODE_ENV === 'production') sgMail.send(msg);
