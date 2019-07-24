@@ -63,7 +63,8 @@ router.post('/', auth, async (req, res) => {
         userId: req.body.userId,
         name: req.body.name,
         amount: req.body.amount,
-        habitId: req.body.habitId || ''
+        habitId: req.body.habitId || '',
+        date: req.body.date
     });
 
     const result = await expense.save();
