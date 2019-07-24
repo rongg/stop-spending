@@ -20,7 +20,7 @@ const validation = {
             name: Joi.string().min(minLengthName).max(maxLengthName).required(),
             amount: Joi.number().integer().min(1).max(1000000000).required(),
             date: Joi.date(),
-            habitId: Joi.string().max(25),
+            habitId: Joi.string().max(25).allow(''),
         };
 
         return Joi.validate(expense, jExpenseSchema);
