@@ -55,7 +55,8 @@ describe('api/expenses', () => {
                 userId: user._id,
                 name: 'Expense 1',
                 amount: 50,
-                habitId: habit._id
+                habitId: habit._id,
+                needWant: 'want'
             });
             await expense1.save();
 
@@ -63,7 +64,8 @@ describe('api/expenses', () => {
                 userId: user._id,
                 name: 'Expense 2',
                 amount: 75,
-                habitId: habit._id
+                habitId: habit._id,
+                needWant: 'want'
             });
             await expense2.save();
 
@@ -98,14 +100,16 @@ describe('api/expenses', () => {
                 userId: user._id,
                 name: 'Expense 1',
                 amount: 50,
-                habitId: habit._id
+                habitId: habit._id,
+                needWant: 'want'
             });
             await expense1.save();
             const expense2 = new Expense({
                 userId: user._id,
                 name: 'Expense 2',
                 amount: 99,
-                habitId: habit._id
+                habitId: habit._id,
+                needWant: 'want'
             });
             await expense2.save();
 
@@ -120,7 +124,8 @@ describe('api/expenses', () => {
                 userId: user._id,
                 name: 'Expense for different habit',
                 amount: 27,
-                habitId: habit2._id
+                habitId: habit2._id,
+                needWant: 'want'
             });
             await expense3.save();
 
@@ -162,7 +167,8 @@ describe('api/expenses', () => {
                 userId: user._id,
                 name: 'Expense 1',
                 amount: 50,
-                habitId: habit._id
+                habitId: habit._id,
+                needWant: 'want'
             });
             await expense.save();
 
@@ -190,7 +196,8 @@ describe('api/expenses', () => {
                 userId: user._id,
                 name: 'Expense 1',
                 amount: "should be integer",
-                habitId: habit._id
+                habitId: habit._id,
+                needWant: 'want'
             });
             const res = await request(server)
                 .post("/api/expenses")
@@ -206,7 +213,8 @@ describe('api/expenses', () => {
                 userId: new mongoose.Types.ObjectId(),
                 name: 'Expense 1',
                 amount: 75,
-                habitId: habit._id
+                habitId: habit._id,
+                needWant: 'want'
             });
             const res = await request(server)
                 .post("/api/expenses")
@@ -223,7 +231,8 @@ describe('api/expenses', () => {
                 userId: user._id,
                 name: 'Expense 1',
                 amount: 27,
-                habitId: habit._id.toString()
+                habitId: habit._id.toString(),
+                needWant: 'want'
             });
             const res = await request(server)
                 .post("/api/expenses")
@@ -255,7 +264,8 @@ describe('api/expenses', () => {
                 userId: user._id,
                 name: 'Expense 1',
                 amount: 100,
-                habitId: habit._id.toString()
+                habitId: habit._id.toString(),
+                needWant: 'want'
             });
             const res1 = await request(server)
                 .post("/api/expenses")
@@ -278,7 +288,8 @@ describe('api/expenses', () => {
                 userId: user._id,
                 name: 'Expense 1',
                 amount: 100,
-                habitId: habit._id.toString()
+                habitId: habit._id.toString(),
+                needWant: 'want'
             });
             const res = await request(server)
                 .put("/api/expenses/" + new mongoose.Types.ObjectId())
@@ -294,7 +305,8 @@ describe('api/expenses', () => {
                 userId: user._id,
                 name: 'Expense 1',
                 amount: 100,
-                habitId: habit._id.toString()
+                habitId: habit._id.toString(),
+                needWant: 'want'
             });
             const res1 = await request(server)
                 .post("/api/expenses")
@@ -345,7 +357,8 @@ describe('api/expenses', () => {
                 userId: user._id,
                 name: 'Expense 1',
                 amount: 100,
-                habitId: habit._id.toString()
+                habitId: habit._id.toString(),
+                needWant: 'want'
             });
             const res = await request(server)
                 .delete("/api/expenses/" + new mongoose.Types.ObjectId())
@@ -362,7 +375,8 @@ describe('api/expenses', () => {
                 userId: user._id,
                 name: 'Expense 1',
                 amount: 100,
-                habitId: habit._id
+                habitId: habit._id,
+                needWant: 'want'
             });
             const res1 = await request(server)
                 .post("/api/expenses")

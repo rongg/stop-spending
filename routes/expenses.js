@@ -64,7 +64,8 @@ router.post('/', auth, async (req, res) => {
         name: req.body.name,
         amount: req.body.amount,
         habitId: req.body.habitId || '',
-        date: req.body.date
+        date: req.body.date,
+        needWant: req.body.needWant
     });
 
     const result = await expense.save();
@@ -106,6 +107,7 @@ router.put('/:id', auth, async (req, res) => {
     expense.amount = req.body.amount;
     expense.date = req.body.date;
     expense.habitId = req.body.habitId || '';
+    expense.needWant = req.body.needWant || '';
 
     const result = await expense.save();
 

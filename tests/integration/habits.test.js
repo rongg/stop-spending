@@ -327,14 +327,16 @@ describe('api/habits', () => {
                 name: "Expense 1",
                 amount: 100,
                 date: new Date(),
-                habitId: habitId
+                habitId: habitId,
+                needWant: 'want'
             });
             const expense2 = new Expense({
                 userId: user._id,
                 name: "Expense 2",
                 amount: 50,
                 date: new Date(),
-                habitId: habitId
+                habitId: habitId,
+                needWant: 'want'
             });
 
             await expense1.save();
