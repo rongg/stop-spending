@@ -6,6 +6,7 @@ const mHabitSchema = new mongoose.Schema({
     userId: {type: String, maxLength: 25, require: true},
     name: {type: String, required: true, minLength: minLengthName, maxLength: maxLengthName},
     budget: {type: Number, required: true, minValue: 1, maxValue: 1000000000},
+    budgetType: {type: String, required: true, minLength: 1, maxLength: 25},
     icon: {type: String, maxLength: 255},
 });
 
@@ -18,6 +19,7 @@ const validation ={
             userId: Joi.string().max(25).required(),
             name: Joi.string().min(minLengthName).max(maxLengthName).required(),
             budget: Joi.number().integer().min(1).max(1000000000).required(),
+            budgetType: Joi.string().min(1).max(25).required(),
             icon: Joi.string().max(255)
         };
 

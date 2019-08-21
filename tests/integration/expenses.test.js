@@ -20,7 +20,8 @@ describe('api/expenses', () => {
 
         habit = new Habit({
             name: 'Test Habit',
-            budget: 1500
+            budget: 1500,
+            budgetType: 'week'
         });
 
         token = user.generateAuthToken();
@@ -302,7 +303,8 @@ describe('api/expenses', () => {
                 .set("Accept", "application/json");
             const habit2 = new Habit({
                 name: 'Test Habit 2',
-                budget: 600
+                budget: 600,
+                budgetType: 'week'
             });
             await habit2.save();
 

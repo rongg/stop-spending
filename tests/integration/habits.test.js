@@ -37,6 +37,7 @@ describe('api/habits', () => {
                 _id: new mongoose.Types.ObjectId().toHexString(),
                 name: 'Habit 1',
                 budget: 50,
+                budgetType: 'week',
                 icon: 'www.icons.com/1'
             });
             await habit1.save();
@@ -46,6 +47,7 @@ describe('api/habits', () => {
                 _id: new mongoose.Types.ObjectId().toHexString(),
                 name: 'Habit 2',
                 budget: 99,
+                budgetType: 'week',
                 icon: 'www.icons.com/2'
             });
             await habit2.save();
@@ -81,6 +83,7 @@ describe('api/habits', () => {
                 userId: user._id,
                 name: 'New Habit',
                 budget: 1000,
+                budgetType: 'week',
                 icon: 'www.icons.com/new_habit'
             });
             await habit.save();
@@ -108,6 +111,7 @@ describe('api/habits', () => {
             const habit = new Habit({
                 name: "Habit missing user id",
                 budget: 100,
+                budgetType: 'week',
                 icon: "icons.com"
             });
             const res = await request(server)
@@ -124,6 +128,7 @@ describe('api/habits', () => {
                 name: "Duplicate habit",
                 userId: user._id,
                 budget: 100,
+                budgetType: 'week',
                 icon: "icons.com"
             });
 
@@ -147,6 +152,7 @@ describe('api/habits', () => {
                 name: "Habit A",
                 userId: new mongoose.Types.ObjectId(),
                 budget: 100,
+                budgetType: 'week',
                 icon: "icons.com"
             });
 
@@ -166,6 +172,7 @@ describe('api/habits', () => {
                 name: "New Habit",
                 userId: user._id,
                 budget: 2000,
+                budgetType: 'week',
                 icon: "icons.com"
             });
             const res = await request(server)
@@ -197,6 +204,7 @@ describe('api/habits', () => {
                 name: "New Habit",
                 userId: user._id,
                 budget: 2000,
+                budgetType: 'week',
                 icon: "icons.com"
             });
             const res1 = await request(server)
@@ -220,6 +228,7 @@ describe('api/habits', () => {
                 name: "New Habit",
                 userId: user._id,
                 budget: 2000,
+                budgetType: 'week',
                 icon: "icons.com"
             });
             const res = await request(server)
@@ -236,6 +245,7 @@ describe('api/habits', () => {
                 name: "New Habit",
                 userId: user._id,
                 budget: 2000,
+                budgetType: 'week',
                 icon: "icons.com"
             });
             const res1 = await request(server)
@@ -246,6 +256,7 @@ describe('api/habits', () => {
 
             habit.name = "Updated Habit";
             habit.budget = 1999;
+            habit.budgetType = 'month';
             habit.icon = "icons.com/1";
 
             const res2 = await request(server)
@@ -257,6 +268,7 @@ describe('api/habits', () => {
             expect(res2.status).toBe(200);
             expect(res2.body.name).toBe(habit.name);
             expect(res2.body.budget).toBe(habit.budget);
+            expect(res2.body.budgetType).toBe(habit.budgetType);
             expect(res2.body.icon).toBe(habit.icon);
         });
     });
@@ -281,6 +293,7 @@ describe('api/habits', () => {
                 name: "New Habit",
                 userId: user._id,
                 budget: 2000,
+                budgetType: 'week',
                 icon: "icons.com"
             });
             const res = await request(server)
@@ -298,6 +311,7 @@ describe('api/habits', () => {
                 name: "New Habit",
                 userId: user._id,
                 budget: 2000,
+                budgetType: 'week',
                 icon: "icons.com"
             });
 

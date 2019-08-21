@@ -38,6 +38,7 @@ router.post('/', auth, async (req, res) => {
         userId: req.body.userId,
         name: req.body.name,
         budget: req.body.budget,
+        budgetType: req.body.budgetType,
         icon: req.body.icon
     });
 
@@ -77,6 +78,7 @@ router.put('/:id', auth, async (req, res) => {
     //  Update and return modified
     habit.name = req.body.name;
     habit.budget = req.body.budget;
+    habit.budgetType = req.body.budgetType;
     habit.icon = req.body.icon;
 
     const result = await habit.save();
