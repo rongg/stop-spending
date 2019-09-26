@@ -3,6 +3,7 @@ const router = express.Router();
 const auth = require('../middleware/auth');
 const {User} = require('../models/user');
 const {Expense} = require('../models/expense');
+const {Urge, validation: urgeValidation} = require('../models/urge');
 const {Habit, validation} = require('../models/habit');
 
 
@@ -101,6 +102,62 @@ router.delete('/:id', auth, async (req, res) => {
 
     //  Set expense habitId's to null
     await Expense.updateMany({habitId}, {habitId: ''});
+
+    res.status(200).send(result);
+});
+
+// GET api/habits/:id/urges --  Urges for single habit
+router.get('/:id/urges', auth, async (req, res) => {
+    let query = {userId: req.user._id};
+    let habitId = req.params.id;
+    if (!validation.checkId(habitId)) {
+        return res.status(400).send("Not found");
+    }
+    const habit = await Habit.findById(habitId);
+    if (!habit) {
+        return res.status(404).send("Habit not found");
+    }
+
+    if (req.query.start && req.query.end) {
+        query.date = {$gte: req.query.start, $lte: req.query.end};
+    } else {
+        return res.status(400).send('Start and end date is required.');
+    }
+
+    const urges = await Urge.find(query);
+
+    res.status(200).send(urges);
+});
+
+// GET api/habits/urges --  All urges for a user
+router.get('/urges/all', auth, async (req, res) => {
+    let query = {userId: req.user._id};
+
+    if (req.query.start && req.query.end) {
+        query.date = {$gte: req.query.start, $lte: req.query.end};
+    } else {
+        return res.status(400).send('Start and end date is required.');
+    }
+
+    const urges = await Urge.find(query);
+
+    res.status(200).send(urges);
+});
+
+// POST api/habits/:id/urge
+router.post('/:id/urge', auth, async(req, res) => {
+    const vResult = urgeValidation.check(req.body);
+    if (vResult.error) {
+        return res.status(400).send(vResult.error);
+    }
+
+    const urge = new Urge({
+        date: req.body.date,
+        habitId: req.body.habitId,
+        userId: req.body.userId
+    });
+
+    const result = await urge.save();
 
     res.status(200).send(result);
 });

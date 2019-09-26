@@ -2,6 +2,7 @@ const request = require('supertest');
 const {Habit} = require('../../models/habit');
 const {User} = require('../../models/user');
 const {Expense} = require('../../models/expense');
+const {Urge} = require('../../models/urge');
 const mongoose = require('mongoose');
 
 let server;
@@ -23,6 +24,7 @@ describe('api/habits', () => {
     afterEach(async () => {
         await Habit.deleteMany({});
         await User.deleteMany({});
+        await Urge.deleteMany({});
         server.close();
     });
 
@@ -355,6 +357,212 @@ describe('api/habits', () => {
             expect(res2.body.deletedCount).toBe(1);
             expect(expense1Updated.habitId).toBe('');
             expect(expense2Updated.habitId).toBe('');
+        });
+    });
+
+
+    describe('GET /:id/urges', () => {
+        it('should require authorization', async () => {
+            const res = await request(server).get('/api/habits/12345/urges');
+            expect(res.status).toBe(401);
+        });
+        it('should get all urges for a habit in a time period', async () => {
+            const habit = new Habit({
+                _id: new mongoose.Types.ObjectId().toHexString(),
+                userId: user._id,
+                name: 'New Habit',
+                budget: 1000,
+                budgetType: 'week',
+                icon: 'www.icons.com/new_habit'
+            });
+            await habit.save();
+
+            const urge1 = new Urge({
+                _id: new mongoose.Types.ObjectId().toHexString(),
+                userId: user._id,
+                date: new Date(),
+                habitId: habit._id
+            });
+            const urge2 = new Urge({
+                _id: new mongoose.Types.ObjectId().toHexString(),
+                userId: user._id,
+                date: new Date(),
+                habitId: habit._id
+            });
+
+
+            const start = new Date();
+            const end = new Date();
+            start.setDate(start.getDate() - 1);
+            end.setDate(end.getDate() + 1);
+
+            const urge3 = new Urge({
+                _id: new mongoose.Types.ObjectId().toHexString(),
+                userId: user._id,
+                date: new Date().setDate(start.getDate() - 10),
+                habitId: habit._id
+            });
+
+            await urge1.save();
+            await urge2.save();
+            await urge3.save();
+
+            const res0 = await request(server)
+                .get(`/api/habits/${habit._id}/urges`)
+                .set('Accept', 'application/json')
+                .set('x-auth-token', token);
+
+            expect(res0.status).toBe(400);
+            expect(res0.text).toBe('Start and end date is required.');
+
+            const query = `?start=` + start + '&end=' + end;
+
+            const res = await request(server)
+                .get(`/api/habits/${habit._id}/urges` + query)
+                .set('Accept', 'application/json')
+                .set('x-auth-token', token);
+
+            expect(res.status).toBe(200);
+            expect(res.body.length).toBe(2);
+
+            expect(res.body[0]._id).toMatch(urge1._id.toString());
+            expect(res.body[0].userId).toMatch(urge1.userId);
+
+            expect(res.body[1]._id).toMatch(urge2._id.toString());
+            expect(res.body[1].userId).toMatch(urge2.userId);
+        });
+
+    });
+
+    describe('GET /urges/all', () => {
+        it('should require authorization', async () => {
+            const res = await request(server).get('/api/habits/urges/all');
+            expect(res.status).toBe(401);
+
+        });
+        it('should get all urges for a user in a time period', async () => {
+            const habit = new Habit({
+                _id: new mongoose.Types.ObjectId().toHexString(),
+                userId: user._id,
+                name: 'New Habit',
+                budget: 1000,
+                budgetType: 'week',
+                icon: 'www.icons.com/new_habit'
+            });
+            await habit.save();
+
+            const urge1 = new Urge({
+                _id: new mongoose.Types.ObjectId().toHexString(),
+                userId: user._id,
+                date: new Date(),
+                habitId: habit._id
+            });
+            const urge2 = new Urge({
+                _id: new mongoose.Types.ObjectId().toHexString(),
+                userId: user._id,
+                date: new Date(),
+                habitId: habit._id
+            });
+
+
+            const start = new Date();
+            const end = new Date();
+            start.setDate(start.getDate() - 1);
+            end.setDate(end.getDate() + 1);
+
+            const urge3 = new Urge({
+                _id: new mongoose.Types.ObjectId().toHexString(),
+                userId: user._id,
+                date: new Date().setDate(start.getDate() - 10),
+                habitId: habit._id
+            });
+            const urge4 = new Urge({
+                _id: new mongoose.Types.ObjectId().toHexString(),
+                userId: '12345',
+                date: new Date().setDate(start.getDate() - 10),
+                habitId: habit._id
+            });
+
+            await urge1.save(); //  good
+            await urge2.save(); //  good
+            await urge3.save(); //  out of date range
+            await urge4.save(); //  different user
+
+            const res0 = await request(server)
+                .get(`/api/habits/urges/all`)
+                .set('Accept', 'application/json')
+                .set('x-auth-token', token);
+
+            expect(res0.status).toBe(400);
+            expect(res0.text).toBe('Start and end date is required.');
+
+            const query = `?start=` + start + '&end=' + end;
+
+            const res = await request(server)
+                .get(`/api/habits/urges/all` + query)
+                .set('Accept', 'application/json')
+                .set('x-auth-token', token);
+
+            expect(res.status).toBe(200);
+            expect(res.body.length).toBe(2);
+
+            expect(res.body[0]._id).toMatch(urge1._id.toString());
+            expect(res.body[0].userId).toMatch(urge1.userId);
+
+            expect(res.body[1]._id).toMatch(urge2._id.toString());
+            expect(res.body[1].userId).toMatch(urge2.userId);
+        });
+    });
+
+    describe('POST /:id/urge', () => {
+        it('should require authorization', async () => {
+            const res = await request(server).post('/api/habits');
+            expect(res.status).toBe(401);
+        });
+        //
+        it('should not create an urge if it is invalid', async () => {
+            const urge = new Urge({
+                _id: new mongoose.Types.ObjectId().toHexString(),
+                userId: user._id,
+                date: new Date()
+            });
+
+            const res = await request(server)
+                .post("/api/habits/:id/urge")
+                .send(urge)
+                .set("x-auth-token", token)
+                .set("Accept", "application/json");
+
+            expect(res.status).toBe(400);
+        });
+
+
+        it('should create a new urge', async () => {
+            const habit = new Habit({
+                _id: new mongoose.Types.ObjectId().toHexString(),
+                userId: user._id,
+                name: 'New Habit',
+                budget: 1000,
+                budgetType: 'week',
+                icon: 'www.icons.com/new_habit'
+            });
+            await habit.save();
+
+            const reqBody = {
+                userId: user._id,
+                date: new Date(),
+                habitId: habit._id
+            };
+
+            const res = await request(server)
+                .post("/api/habits/" + habit._id +'/urge')
+                .send(reqBody)
+                .set("x-auth-token", token)
+                .set("Accept", "application/json");
+
+            expect(res.status).toBe(200);
+            expect(res.body.userId).toMatch(reqBody.userId.toString());
+            expect(res.body.habitId).toMatch(reqBody.habitId.toString());
         });
     });
 
