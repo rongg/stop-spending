@@ -124,6 +124,8 @@ router.get('/:id/urges', auth, async (req, res) => {
         return res.status(400).send('Start and end date is required.');
     }
 
+    query.habitId = habitId;
+
     const urges = await Urge.find(query);
 
     res.status(200).send(urges);
