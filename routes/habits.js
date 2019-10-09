@@ -4,6 +4,7 @@ const auth = require('../middleware/auth');
 const {User} = require('../models/user');
 const {Expense} = require('../models/expense');
 const {Urge, validation: urgeValidation} = require('../models/urge');
+const {Goal, validation: goalValidation} = require('../models/goal');
 const {Habit, validation} = require('../models/habit');
 
 
@@ -160,6 +161,85 @@ router.post('/:id/urge', auth, async(req, res) => {
     });
 
     const result = await urge.save();
+
+    res.status(200).send(result);
+});
+
+
+
+// GET api/habits/:id/goals --  Goals for single habit
+router.get('/:id/goals', auth, async (req, res) => {
+    let query = {userId: req.user._id};
+    let habitId = req.params.id;
+    if (!validation.checkId(habitId)) {
+        return res.status(400).send("Not found");
+    }
+    const habit = await Habit.findById(habitId);
+    if (!habit) {
+        return res.status(404).send("Habit not found");
+    }
+
+    if (req.query.start && req.query.end) {
+        query.start = {$gte: req.query.start, $lte: req.query.end};
+        query.end = {$gte: req.query.start, $lte: req.query.end};
+    } else {
+        return res.status(400).send('Start and end date is required.');
+    }
+
+    query.habitId = habitId;
+
+    if(req.query.active !== undefined) query.active = req.query.active;
+    if(req.query.pass !== undefined) query.pass = req.query.pass;
+    if(req.query.type !== undefined) query.type = req.query.type;
+
+    const goals = await Goal.find(query);
+
+    res.status(200).send(goals);
+});
+
+// GET api/habits/goals --  All goals for a user
+router.get('/goals/all', auth, async (req, res) => {
+    let query = {userId: req.user._id};
+
+    if (req.query.start && req.query.end) {
+        query.end = {$gte: req.query.start, $lte: req.query.end};
+    } else {
+        return res.status(400).send('Start and end date is required.');
+    }
+
+    if(req.query.active !== undefined) query.active = req.query.active;
+    if(req.query.pass !== undefined) query.pass = req.query.pass;
+    if(req.query.type !== undefined) query.type = req.query.type;
+
+    const goals = await Goal.find(query);
+
+    res.status(200).send(goals);
+});
+
+// POST api/habits/:id/goal
+router.post('/:id/goal', auth, async(req, res) => {
+    const vResult = goalValidation.check(req.body);
+    if (vResult.error) {
+        return res.status(400).send(vResult.error);
+    }
+
+    const startDate = new Date(req.body.start);
+    const endDate = new Date(req.body.end);
+    if(startDate.getTime() >= endDate.getTime()){
+        return res.status(400).send("End date must be after Start date!");
+    }
+
+    const goal = new Goal({
+        start: req.body.start,
+        end: req.body.end,
+        habitId: req.body.habitId,
+        userId: req.body.userId,
+        type: req.body.type,
+        pass: false,
+        active: true
+    });
+
+    const result = await goal.save();
 
     res.status(200).send(result);
 });
