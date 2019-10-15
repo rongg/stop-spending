@@ -230,6 +230,7 @@ router.post('/:id/goal', auth, async(req, res) => {
         end: req.body.end,
         habitId: req.body.habitId,
         userId: req.body.userId,
+        target: req.body.target,
         type: req.body.type,
         pass: false,
         active: true
