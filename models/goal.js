@@ -23,6 +23,7 @@ const validation = {
             end: Joi.date().required(),
             habitId: Joi.string().max(25).required(),
             type: Joi.string().max(25).required(),
+            period: Joi.string().allow(''),
             target: Joi.number().required(),
             pass: Joi.boolean(),
             active: Joi.boolean(),
