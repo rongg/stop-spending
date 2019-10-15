@@ -182,8 +182,6 @@ router.get('/:id/goals', auth, async (req, res) => {
     if (req.query.start && req.query.end) {
         query.start = {$gte: req.query.start, $lte: req.query.end};
         query.end = {$gte: req.query.start, $lte: req.query.end};
-    } else {
-        return res.status(400).send('Start and end date is required.');
     }
 
     query.habitId = habitId;
@@ -203,8 +201,6 @@ router.get('/goals/all', auth, async (req, res) => {
 
     if (req.query.start && req.query.end) {
         query.end = {$gte: req.query.start, $lte: req.query.end};
-    } else {
-        return res.status(400).send('Start and end date is required.');
     }
 
     if(req.query.active !== undefined) query.active = req.query.active;
