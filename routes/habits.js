@@ -148,7 +148,7 @@ router.get('/urges/all', auth, async (req, res) => {
 });
 
 // POST api/habits/:id/urge
-router.post('/:id/urge', auth, async(req, res) => {
+router.post('/:id/urge', auth, async (req, res) => {
     const vResult = urgeValidation.check(req.body);
     if (vResult.error) {
         return res.status(400).send(vResult.error);
@@ -164,7 +164,6 @@ router.post('/:id/urge', auth, async(req, res) => {
 
     res.status(200).send(result);
 });
-
 
 
 // GET api/habits/:id/goals --  Goals for single habit
@@ -186,9 +185,9 @@ router.get('/:id/goals', auth, async (req, res) => {
 
     query.habitId = habitId;
 
-    if(req.query.active !== undefined) query.active = req.query.active;
-    if(req.query.pass !== undefined) query.pass = req.query.pass;
-    if(req.query.type !== undefined) query.type = req.query.type;
+    if (req.query.active !== undefined) query.active = req.query.active;
+    if (req.query.pass !== undefined) query.pass = req.query.pass;
+    if (req.query.type !== undefined) query.type = req.query.type;
 
     const goals = await Goal.find(query);
 
@@ -203,17 +202,29 @@ router.get('/goals/all', auth, async (req, res) => {
         query.end = {$gte: req.query.start, $lte: req.query.end};
     }
 
-    if(req.query.active !== undefined) query.active = req.query.active;
-    if(req.query.pass !== undefined) query.pass = req.query.pass;
-    if(req.query.type !== undefined) query.type = req.query.type;
+    if (req.query.active !== undefined) query.active = req.query.active;
+    if (req.query.pass !== undefined) query.pass = req.query.pass;
+    if (req.query.type !== undefined) query.type = req.query.type;
 
     const goals = await Goal.find(query);
 
     res.status(200).send(goals);
 });
 
+// GET api/habits/goal/:id --  Get goal by Id
+router.get('/goal/:id', auth, async (req, res) => {
+    let goalId = req.params.id;
+    if (!validation.checkId(goalId)) {
+        return res.status(400).send("Not found");
+    }
+
+    const goals = await Goal.findById(goalId);
+    
+    res.status(200).send(goals);
+});
+
 // POST api/habits/:id/goal
-router.post('/:id/goal', auth, async(req, res) => {
+router.post('/:id/goal', auth, async (req, res) => {
     const vResult = goalValidation.check(req.body);
     if (vResult.error) {
         return res.status(400).send(vResult.error);
@@ -221,7 +232,7 @@ router.post('/:id/goal', auth, async(req, res) => {
 
     const startDate = new Date(req.body.start);
     const endDate = new Date(req.body.end);
-    if(startDate.getTime() >= endDate.getTime()){
+    if (startDate.getTime() >= endDate.getTime()) {
         return res.status(400).send("End date must be after Start date!");
     }
 

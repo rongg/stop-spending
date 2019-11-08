@@ -710,6 +710,49 @@ describe('api/habits', () => {
 
     });
 
+    describe('GET /goal/:id', () => {
+        it('should require authorization', async () => {
+            const res = await request(server).get('/api/habits/12345/goals');
+            expect(res.status).toBe(401);
+        });
+        it(`should get a single goal using it's id`, async () => {
+            const habit = new Habit({
+                _id: new mongoose.Types.ObjectId().toHexString(),
+                userId: user._id,
+                name: 'New Habit',
+                budget: 1000,
+                budgetType: 'week',
+                icon: 'www.icons.com/new_habit'
+            });
+            await habit.save();
+
+            const goal1 = new Goal({
+                _id: new mongoose.Types.ObjectId().toHexString(),
+                userId: user._id,
+                start: new Date(),
+                end: new Date(),
+                habitId: habit._id,
+                type: 'micro_budget',
+                pass: false,
+                active: true
+            });
+
+            await goal1.save();
+
+            const res = await request(server)
+                .get(`/api/habits/goal/` + goal1._id)
+                .set('Accept', 'application/json')
+                .set('x-auth-token', token);
+
+            expect(res.status).toBe(200);
+
+            expect(res.body._id).toMatch(goal1._id.toString());
+            expect(res.body.userId).toMatch(goal1.userId);
+
+        });
+
+    });
+
     describe('GET /goals/all', () => {
         it('should require authorization', async () => {
             const res = await request(server).get('/api/habits/goals/all');
