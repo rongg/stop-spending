@@ -54,6 +54,7 @@ describe('api/users', () => {
                 .set('Accept', 'application/json');
 
             expect(res.status).toBe(400);
+            expect(res.body.details[0].message).toBe("\"name\" is required");
         });
         it(`should reject creating a user if the password doesn't meet complexity requirements`, async () => {
             const user = new User({
@@ -67,6 +68,7 @@ describe('api/users', () => {
                 .set('Accept', 'application/json');
 
             expect(res.status).toBe(400);
+            expect(res.body.details[0].message).toBe("\"value\" doesn't contain the required numeric characters");
         });
 
         it('should reject creating a user if it already exists', async () => {

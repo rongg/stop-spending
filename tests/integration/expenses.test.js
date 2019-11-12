@@ -205,6 +205,7 @@ describe('api/expenses', () => {
                 .set("x-auth-token", token)
                 .set("Accept", "application/json");
 
+            expect(res.body.details[0].message).toBe("\"amount\" is required");
             expect(res.status).toBe(400);
         });
 
@@ -273,7 +274,7 @@ describe('api/expenses', () => {
                 .set("x-auth-token", token)
                 .set("Accept", "application/json");
 
-            expense.amount = 0;
+            expense.amount = 0;     //  invalid range
 
             const res2 = await request(server)
                 .put("/api/expenses/" + res1.body._id)
@@ -281,6 +282,8 @@ describe('api/expenses', () => {
                 .set("x-auth-token", token)
                 .set("Accept", "application/json");
 
+
+            expect(res2.body.details[0].message).toBe("\"amount\" must be larger than or equal to 1");
             expect(res2.status).toBe(400);
         });
         it('should make sure the expense exists', async () => {
