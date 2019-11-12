@@ -124,6 +124,8 @@ describe('api/habits', () => {
                 .set("x-auth-token", token)
                 .set("Accept", "application/json");
 
+
+            expect(res.body.details[0].message).toBe('"userId" is required');
             expect(res.status).toBe(400);
         });
 
@@ -217,7 +219,7 @@ describe('api/habits', () => {
                 .set("x-auth-token", token)
                 .set("Accept", "application/json");
 
-            habit.budget = 0;
+            habit.budget = 0;   //  Invalid range
 
             const res2 = await request(server)
                 .put("/api/habits/" + res1.body._id)
@@ -225,6 +227,8 @@ describe('api/habits', () => {
                 .set("x-auth-token", token)
                 .set("Accept", "application/json");
 
+
+            expect(res2.body.details[0].message).toBe('"budget" must be larger than or equal to 1');
             expect(res2.status).toBe(400);
         });
         it('should make sure the habit exists', async () => {
@@ -523,17 +527,22 @@ describe('api/habits', () => {
         });
         //
         it('should not create an urge if it is invalid', async () => {
-            const urge = new Urge({
+            const urge = new Urge({ //  Missing req habitId
                 _id: new mongoose.Types.ObjectId().toHexString(),
                 userId: user._id,
                 date: new Date()
             });
 
+            const habitId = new mongoose.Types.ObjectId().toHexString();
+
             const res = await request(server)
-                .post("/api/habits/:id/urge")
+                .post("/api/habits/" + habitId + "/urge")
                 .send(urge)
                 .set("x-auth-token", token)
                 .set("Accept", "application/json");
+
+
+            expect(res.body.details[0].message).toBe('"habitId" is required');
 
             expect(res.status).toBe(400);
         });
@@ -893,6 +902,185 @@ describe('api/habits', () => {
         });
     });
 
+    //  PUT api/habits/goal/:id
+    describe('PUT /goal/:id', () => {
+        it('should require authorization', async () => {
+            const res = await request(server).put('/api/habits/goal/1234');
+            expect(res.status).toBe(401);
+        });
+        it('should not update a goal if it is invalid', async () => {
+            const goal = new Goal({
+                userId: user._id,
+                start: new Date(),
+                end: new Date(),
+                habitId: new mongoose.Types.ObjectId().toHexString(),
+                type: 'micro_budget',
+                pass: false,
+                active: true
+            });
+
+            const res = await request(server)
+                .put("/api/habits/goal/1234")
+                .send(goal)
+                .set("x-auth-token", token)
+                .set("Accept", "application/json");
+
+            expect(res.body.details[0].message).toBe('"target" is required');
+            expect(res.status).toBe(400);
+        });
+
+        it('reject updating if the end date is not after the start date', async () => {
+            let startDate = new Date();
+            const habit = new Habit({
+                _id: new mongoose.Types.ObjectId().toHexString(),
+                userId: user._id,
+                name: 'New Habit',
+                budget: 1000,
+                budgetType: 'week',
+                icon: 'www.icons.com/new_habit'
+            });
+            await habit.save();
+
+            let goal = new Goal({
+                userId: user._id,
+                start: startDate,
+                end: new Date().setDate(startDate.getDate() + 1),
+                habitId: habit._id,
+                type: 'micro_budget',
+                target: 100,
+                pass: false,
+                active: true
+            });
+
+            await goal.save();
+
+
+            let goal2 = new Goal({
+                userId: user._id,
+                start: startDate,
+                end: startDate,
+                habitId: habit._id,
+                type: 'micro_budget',
+                target: 100,
+                pass: false,
+                active: true
+            });
+
+            const res = await request(server)
+                .put("/api/habits/goal/" + goal._id)
+                .send(goal2)
+                .set("x-auth-token", token)
+                .set("Accept", "application/json");
+
+            expect(res.status).toBe(400);
+            expect(res.text).toBe("End date must be after Start date!");
+        });
+
+
+        it('should update the goal target, end, and type', async () => {
+            const habit = new Habit({
+                _id: new mongoose.Types.ObjectId().toHexString(),
+                userId: user._id,
+                name: 'New Habit',
+                budget: 1000,
+                budgetType: 'week',
+                icon: 'www.icons.com/new_habit'
+            });
+            await habit.save();
+
+            let startDate = new Date();
+
+            let goal = new Goal({
+                userId: user._id,
+                start: startDate,
+                end: new Date().setDate(startDate.getDate() + 1),
+                habitId: habit._id,
+                type: 'micro_budget',
+                target: 100,
+                pass: false,
+                active: true
+            });
+
+            await goal.save();
+
+            let goal2 = new Goal({
+                userId: user._id,
+                start: startDate,
+                end: new Date().setDate(startDate.getDate() + 5),
+                habitId: habit._id,
+                type: 'beat',
+                target: 99,
+                pass: false,
+                active: true
+            });
+
+            const res = await request(server)
+                .put("/api/habits/goal/" + goal._id)
+                .send(goal2)
+                .set("x-auth-token", token)
+                .set("Accept", "application/json");
+
+            expect(res.status).toBe(200);
+            expect(res.body.userId).toMatch(goal2.userId.toString());
+            expect(res.body.habitId).toMatch(goal2.habitId.toString());
+            expect(res.body.target).toBe(goal2.target);
+            expect(res.body.type).toMatch(goal2.type);
+            expect(new Date(res.body.end).getTime()).toBe(goal2.end.getTime());
+        });
+    });
+
+    //  DELETE api/habits/goal/:id
+    describe('DELETE /:id', () => {
+        it('should require authorization', async () => {
+            const res = await request(server).delete('/api/habits/goal/123');
+            expect(res.status).toBe(401);
+        });
+
+        it('should validate the object id and return a generic error message', async () => {
+            const res = await request(server)
+                .delete("/api/habits/goal/1234")   //  invalid id
+                .set("x-auth-token", token);
+
+            expect(res.status).toBe(400);
+            expect(res.text).toBe("Not found");
+        });
+
+        it('should make sure the goal exists', async () => {
+            const res = await request(server)
+                .delete("/api/habits/goal/" + new mongoose.Types.ObjectId())
+                .set("x-auth-token", token)
+                .set("Accept", "application/json");
+
+            expect(res.status).toBe(404);
+            expect(res.text).toBe('Goal not found');
+        });
+
+        it(`should delete the goal`, async () => {
+            let startDate = new Date();
+            let goal = new Goal({
+                userId: user._id,
+                start: startDate,
+                end: new Date().setDate(startDate.getDate() + 1),
+                habitId: new mongoose.Types.ObjectId(),
+                type: 'micro_budget',
+                target: 100,
+                pass: false,
+                active: true
+            });
+
+            await goal.save();
+
+            const res = await request(server)
+                .delete("/api/habits/goal/" + goal._id)
+                .set("x-auth-token", token)
+                .set("Accept", "application/json");
+
+
+            expect(res.status).toBe(200);
+            expect(res.body.deletedCount).toBe(1);
+        });
+    });
+
     describe('POST /:id/goal', () => {
         it('should require authorization', async () => {
             const res = await request(server).post('/api/habits');
@@ -909,13 +1097,16 @@ describe('api/habits', () => {
                 pass: false,
                 active: true
             });
+            const habitId = new mongoose.Types.ObjectId().toHexString();
 
             const res = await request(server)
-                .post("/api/habits/:id/goal")
-                .send(goal)
+                .post("/api/habits/" + habitId + "/goal")
+                .send(goal) //  Missing target
                 .set("x-auth-token", token)
                 .set("Accept", "application/json");
 
+
+            expect(res.body.details[0].message).toBe('"target" is required');
             expect(res.status).toBe(400);
         });
 
@@ -934,7 +1125,7 @@ describe('api/habits', () => {
             });
 
             const res = await request(server)
-                .post("/api/habits/:id/goal")
+                .post("/api/habits/" + goal.habitId + "/goal")
                 .send(goal)
                 .set("x-auth-token", token)
                 .set("Accept", "application/json");
@@ -945,6 +1136,7 @@ describe('api/habits', () => {
 
 
         it('should create a new goal', async () => {
+            let startDate = new Date();
             const habit = new Habit({
                 _id: new mongoose.Types.ObjectId().toHexString(),
                 userId: user._id,
@@ -955,7 +1147,6 @@ describe('api/habits', () => {
             });
             await habit.save();
 
-            let startDate = new Date();
             const reqBody = {
                 _id: new mongoose.Types.ObjectId().toHexString(),
                 userId: user._id,

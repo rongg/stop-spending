@@ -219,7 +219,7 @@ router.get('/goal/:id', auth, async (req, res) => {
     }
 
     const goals = await Goal.findById(goalId);
-    
+
     res.status(200).send(goals);
 });
 
@@ -248,6 +248,52 @@ router.post('/:id/goal', auth, async (req, res) => {
     });
 
     const result = await goal.save();
+
+    res.status(200).send(result);
+});
+
+//  PUT api/habits/goal/:id
+router.put('/goal/:id', auth, async(req, res) => {
+    const vResult = goalValidation.check(req.body);
+    if (vResult.error) {
+        return res.status(400).send(vResult.error);
+    }
+
+    const goal = await Goal.findById(req.params.id);
+    if (!goal) {
+        res.status(404).send("Goal not found");
+        return;
+    }
+
+    const startDate = new Date(req.body.start);
+    const endDate = new Date(req.body.end);
+    if (startDate.getTime() >= endDate.getTime()) {
+        return res.status(400).send("End date must be after Start date!");
+    }
+
+    goal.end = req.body.end;
+    goal.target = req.body.target;
+    goal.type = req.body.type;
+
+
+    const result = await goal.save();
+
+    res.status(200).send(result);
+});
+
+//  DELETE api/habits/goal/:id
+router.delete('/goal/:id', auth, async (req, res) => {
+    if (!validation.checkId(req.params.id)) {
+        res.status(400).send("Not found");
+        return;
+    }
+    const goal = await Goal.findById(req.params.id);
+    if (!goal) {
+        res.status(404).send("Goal not found");
+        return;
+    }
+
+    const result = await Goal.deleteOne({_id: req.params.id});
 
     res.status(200).send(result);
 });
