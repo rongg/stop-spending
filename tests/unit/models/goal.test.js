@@ -7,6 +7,7 @@ describe('goal.validation.check', () => {
         end: new Date(),
         habitId: "12345",
         type: 'micro_budget',
+        period: 'custom',
         pass: false,
         active: true
 

@@ -915,6 +915,7 @@ describe('api/habits', () => {
                 end: new Date(),
                 habitId: new mongoose.Types.ObjectId().toHexString(),
                 type: 'micro_budget',
+                period: 'custom',
                 pass: false,
                 active: true
             });
@@ -947,6 +948,7 @@ describe('api/habits', () => {
                 end: new Date().setDate(startDate.getDate() + 1),
                 habitId: habit._id,
                 type: 'micro_budget',
+                period: 'custom',
                 target: 100,
                 pass: false,
                 active: true
@@ -961,6 +963,7 @@ describe('api/habits', () => {
                 end: startDate,
                 habitId: habit._id,
                 type: 'micro_budget',
+                period: 'custom',
                 target: 100,
                 pass: false,
                 active: true
@@ -977,7 +980,7 @@ describe('api/habits', () => {
         });
 
 
-        it('should update the goal target, end, and type', async () => {
+        it('should update the goal target, end, period, and type', async () => {
             const habit = new Habit({
                 _id: new mongoose.Types.ObjectId().toHexString(),
                 userId: user._id,
@@ -996,6 +999,7 @@ describe('api/habits', () => {
                 end: new Date().setDate(startDate.getDate() + 1),
                 habitId: habit._id,
                 type: 'micro_budget',
+                period: 'custom',
                 target: 100,
                 pass: false,
                 active: true
@@ -1009,10 +1013,12 @@ describe('api/habits', () => {
                 end: new Date().setDate(startDate.getDate() + 5),
                 habitId: habit._id,
                 type: 'beat',
+                period: 'week',
                 target: 99,
                 pass: false,
                 active: true
             });
+
 
             const res = await request(server)
                 .put("/api/habits/goal/" + goal._id)
@@ -1025,6 +1031,7 @@ describe('api/habits', () => {
             expect(res.body.habitId).toMatch(goal2.habitId.toString());
             expect(res.body.target).toBe(goal2.target);
             expect(res.body.type).toMatch(goal2.type);
+            expect(res.body.period).toMatch(goal2.period);
             expect(new Date(res.body.end).getTime()).toBe(goal2.end.getTime());
         });
     });
@@ -1094,6 +1101,7 @@ describe('api/habits', () => {
                 end: new Date(),
                 habitId: new mongoose.Types.ObjectId().toHexString(),
                 type: 'micro_budget',
+                period: 'custom',
                 pass: false,
                 active: true
             });
@@ -1119,6 +1127,7 @@ describe('api/habits', () => {
                 end: startDate,
                 habitId: new mongoose.Types.ObjectId().toHexString(),
                 type: 'micro_budget',
+                period: 'custom',
                 target: 100,
                 pass: false,
                 active: true
@@ -1154,6 +1163,7 @@ describe('api/habits', () => {
                 end: new Date().setDate(startDate.getDate() + 1),
                 habitId: new mongoose.Types.ObjectId().toHexString(),
                 type: 'micro_budget',
+                period: 'custom',
                 target: 100.0,
                 pass: false,
                 active: true
