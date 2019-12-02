@@ -243,6 +243,7 @@ router.post('/:id/goal', auth, async (req, res) => {
         userId: req.body.userId,
         target: req.body.target,
         type: req.body.type,
+        name: req.body.name,
         pass: false,
         active: true
     });
@@ -274,6 +275,7 @@ router.put('/goal/:id', auth, async(req, res) => {
     goal.end = req.body.end;
     goal.target = req.body.target;
     goal.type = req.body.type;
+    goal.name = req.body.name;
     goal.period = req.body.period;
 
 
