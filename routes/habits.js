@@ -274,6 +274,7 @@ router.put('/goal/:id', auth, async(req, res) => {
     goal.end = req.body.end;
     goal.target = req.body.target;
     goal.type = req.body.type;
+    goal.name = req.body.name;
     goal.period = req.body.period;
 
 

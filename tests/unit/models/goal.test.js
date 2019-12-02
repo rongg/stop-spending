@@ -7,6 +7,7 @@ describe('goal.validation.check', () => {
         end: new Date(),
         habitId: "12345",
         type: 'micro_budget',
+        name: 'My Goal',
         period: 'custom',
         pass: false,
         active: true
@@ -97,6 +98,26 @@ describe('goal.validation.check', () => {
         it('should be less than 25 characters', () => {
             const goal = Object.assign({}, validGoal);
             goal.type = "12345678901234567890123456789";
+            result = validation.check(goal);
+            expect(result.error).toBeTruthy();
+        });
+    });
+    describe('name', () => {
+        it('should exist', () => {
+            const goal = Object.assign({}, validGoal);
+            delete goal.name;
+            result = validation.check(goal);
+            expect(result.error).toBeTruthy();
+        });
+        it('should be a string', () => {
+            const goal = Object.assign({}, validGoal);
+            goal.name = 12345.5;
+            result = validation.check(goal);
+            expect(result.error).toBeTruthy();
+        });
+        it('should be less than 25 characters', () => {
+            const goal = Object.assign({}, validGoal);
+            goal.name = "12345678901234567890123456789";
             result = validation.check(goal);
             expect(result.error).toBeTruthy();
         });
