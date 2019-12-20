@@ -6,11 +6,13 @@ const dbName = dbConn.substring(dbConn.lastIndexOf('/') + 1);
 
 const MongoClient = require('mongodb').MongoClient;
 
+// const client = new MongoClient(dbConn, {useUnifiedTopology: true, useNewUrlParser: true});
+
 const agenda = new Agenda({db: {address: dbConn}});
 
 agenda.define('update goal statuses', async job => {
     console.log('update goals');
-    MongoClient.connect(dbConn, async (err, client) => {
+    MongoClient.connect(dbConn, {useNewUrlParser: true}, async (err, client) => {
         if (err) {
             return console.error(err);
         }
@@ -35,5 +37,5 @@ agenda.define('update goal statuses', async job => {
 module.exports = (async function () {
     console.log('goal job db: ', dbConn, 'name: ', dbName);
     await agenda.start();
-    await agenda.every('1 minutes', 'update goal statuses');
+    await agenda.every('1 hour', 'update goal statuses');
 });
