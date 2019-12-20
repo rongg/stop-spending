@@ -235,7 +235,6 @@ describe('api/users', () => {
 
             verifyToken = await VerifyToken.findById(verifyToken._id);
 
-            console.log(res.text);
             expect(res.status).toBe(200);
             expect(res.text).toBe('Your password has been reset! Please log in.');
             expect(verifyToken).toBeNull();
