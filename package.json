@@ -31,7 +31,8 @@
     "lodash": "^4.17.14",
     "mongoose": "^5.5.8",
     "winston": "^3.2.1",
-    "winston-mongodb": "^5.0.0"
+    "winston-mongodb": "^5.0.0",
+    "agenda": "latest"
   },
   "devDependencies": {
     "jest": "^24.8.0",
