@@ -1126,7 +1126,7 @@ describe('api/habits', () => {
             expect(res.status).toBe(400);
         });
 
-        it('reject creation if the end date is not after the start date', async () => {
+        it('should reject creation if the end date is not after the start date', async () => {
             let startDate = new Date();
             const goal = new Goal({
                 _id: new mongoose.Types.ObjectId().toHexString(),
@@ -1150,6 +1150,59 @@ describe('api/habits', () => {
 
             expect(res.status).toBe(400);
             expect(res.text).toBe("End date must be after Start date!");
+        });
+
+        it('should reject creation if there is already an active goal for that habit', async () => {
+            let startDate = new Date();
+            const habit = new Habit({
+                _id: new mongoose.Types.ObjectId().toHexString(),
+                userId: user._id,
+                name: 'New Habit',
+                budget: 1000,
+                budgetType: 'week',
+                icon: 'www.icons.com/new_habit'
+            });
+            await habit.save();
+
+            const goal = new Goal({
+                _id: new mongoose.Types.ObjectId().toHexString(),
+                userId: user._id,
+                start: startDate,
+                end: new Date().setDate(startDate.getDate() + 1),
+                habitId: new mongoose.Types.ObjectId().toHexString(),
+                type: 'micro_budget',
+                name: 'My Goal',
+                period: 'custom',
+                target: 100.0,
+                pass: false,
+                active: true
+            });
+
+            await goal.save();
+
+            const reqBody = {
+                _id: new mongoose.Types.ObjectId().toHexString(),
+                userId: user._id,
+                start: startDate,
+                end: new Date().setDate(startDate.getDate() + 1),
+                habitId: new mongoose.Types.ObjectId().toHexString(),
+                type: 'micro_budget',
+                name: 'My Goal 2',
+                period: 'custom',
+                target: 10.0,
+                pass: false,
+                active: true
+            };
+
+            const res = await request(server)
+                .post("/api/habits/" + habit._id + '/goal')
+                .send(reqBody)
+                .set("x-auth-token", token)
+                .set("Accept", "application/json");
+
+
+            expect(res.status).toBe(400);
+            expect(res.text).toBe("There is already an active goal for this habit!");
         });
 
 

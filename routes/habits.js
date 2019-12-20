@@ -236,6 +236,11 @@ router.post('/:id/goal', auth, async (req, res) => {
         return res.status(400).send("End date must be after Start date!");
     }
 
+    const activeGoals = await Goal.find({active: true});
+    if(activeGoals && activeGoals.length){
+        return res.status(400).send("There is already an active goal for this habit!");
+    }
+
     const goal = new Goal({
         start: req.body.start,
         end: req.body.end,
