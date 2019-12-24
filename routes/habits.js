@@ -189,7 +189,7 @@ router.get('/:id/goals', auth, async (req, res) => {
     if (req.query.pass !== undefined) query.pass = req.query.pass;
     if (req.query.type !== undefined) query.type = req.query.type;
 
-    const goals = await Goal.find(query);
+    const goals = await Goal.find(query).sort({end: -1});
 
     res.status(200).send(goals);
 });
@@ -206,7 +206,7 @@ router.get('/goals/all', auth, async (req, res) => {
     if (req.query.pass !== undefined) query.pass = req.query.pass;
     if (req.query.type !== undefined) query.type = req.query.type;
 
-    const goals = await Goal.find(query).sort({end: 1});
+    const goals = await Goal.find(query).sort({end: -1});
 
     res.status(200).send(goals);
 });

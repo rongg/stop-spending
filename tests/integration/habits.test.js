@@ -582,7 +582,7 @@ describe('api/habits', () => {
             const res = await request(server).get('/api/habits/12345/goals');
             expect(res.status).toBe(401);
         });
-        it('should get all active goals for a habit', async () => {
+        it('should get all active goals for a habit ordered by end date desc', async () => {
             const habit = new Habit({
                 _id: new mongoose.Types.ObjectId().toHexString(),
                 userId: user._id,
@@ -593,11 +593,12 @@ describe('api/habits', () => {
             });
             await habit.save();
 
+            let endDate = new Date();
             const goal1 = new Goal({
                 _id: new mongoose.Types.ObjectId().toHexString(),
                 userId: user._id,
                 start: new Date(),
-                end: new Date(),
+                end: endDate,
                 habitId: habit._id,
                 type: 'micro_budget',
                 pass: false,
@@ -608,7 +609,7 @@ describe('api/habits', () => {
                 _id: new mongoose.Types.ObjectId().toHexString(),
                 userId: user._id,
                 start: new Date(),
-                end: new Date(),
+                end: new Date(endDate.getTime() + 5*60000),
                 habitId: habit._id,
                 type: 'micro_budget',
                 pass: false,
@@ -639,12 +640,12 @@ describe('api/habits', () => {
 
             expect(res.status).toBe(200);
             expect(res.body.length).toBe(2);
+            
+            expect(res.body[1]._id).toMatch(goal1._id.toString());
+            expect(res.body[1].userId).toMatch(goal1.userId);
 
-            expect(res.body[0]._id).toMatch(goal1._id.toString());
-            expect(res.body[0].userId).toMatch(goal1.userId);
-
-            expect(res.body[1]._id).toMatch(goal2._id.toString());
-            expect(res.body[1].userId).toMatch(goal2.userId);
+            expect(res.body[0]._id).toMatch(goal2._id.toString());
+            expect(res.body[0].userId).toMatch(goal2.userId);
         });
         it('should get all goals for a habit in a time period', async () => {
             const habit = new Habit({
@@ -832,7 +833,7 @@ describe('api/habits', () => {
             expect(res.body[0]._id).toMatch(goal2._id.toString());
             expect(res.body[0].userId).toMatch(goal2.userId);
         });
-        it('should get all goals for a user in a time period', async () => {
+        it('should get all goals for a user in a time period ordered by end date desc', async () => {
             const habit = new Habit({
                 _id: new mongoose.Types.ObjectId().toHexString(),
                 userId: user._id,
@@ -843,11 +844,12 @@ describe('api/habits', () => {
             });
             await habit.save();
 
+            let endDate = new Date();
             const goal1 = new Goal({
                 _id: new mongoose.Types.ObjectId().toHexString(),
                 userId: user._id,
                 start: new Date(),
-                end: new Date(),
+                end: endDate,
                 habitId: habit._id,
                 type: 'micro_budget',
                 pass: false,
@@ -857,7 +859,7 @@ describe('api/habits', () => {
                 _id: new mongoose.Types.ObjectId().toHexString(),
                 userId: user._id,
                 start: new Date(),
-                end: new Date(),
+                end: new Date(endDate.getTime() + 5*60000),
                 habitId: habit._id,
                 type: 'micro_budget',
                 pass: false,
@@ -895,11 +897,11 @@ describe('api/habits', () => {
             expect(res.status).toBe(200);
             expect(res.body.length).toBe(2);
 
-            expect(res.body[0]._id).toMatch(goal1._id.toString());
-            expect(res.body[0].userId).toMatch(goal1.userId);
+            expect(res.body[1]._id).toMatch(goal1._id.toString());
+            expect(res.body[1].userId).toMatch(goal1.userId);
 
-            expect(res.body[1]._id).toMatch(goal2._id.toString());
-            expect(res.body[1].userId).toMatch(goal2.userId);
+            expect(res.body[0]._id).toMatch(goal2._id.toString());
+            expect(res.body[0].userId).toMatch(goal2.userId);
         });
     });
 
