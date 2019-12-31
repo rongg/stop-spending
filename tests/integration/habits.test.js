@@ -640,7 +640,7 @@ describe('api/habits', () => {
 
             expect(res.status).toBe(200);
             expect(res.body.length).toBe(2);
-            
+
             expect(res.body[1]._id).toMatch(goal1._id.toString());
             expect(res.body[1].userId).toMatch(goal1.userId);
 
@@ -1172,7 +1172,7 @@ describe('api/habits', () => {
                 userId: user._id,
                 start: startDate,
                 end: new Date().setDate(startDate.getDate() + 1),
-                habitId: new mongoose.Types.ObjectId().toHexString(),
+                habitId: habit._id,
                 type: 'micro_budget',
                 name: 'My Goal',
                 period: 'custom',
@@ -1188,7 +1188,7 @@ describe('api/habits', () => {
                 userId: user._id,
                 start: startDate,
                 end: new Date().setDate(startDate.getDate() + 1),
-                habitId: new mongoose.Types.ObjectId().toHexString(),
+                habitId: habit._id,
                 type: 'micro_budget',
                 name: 'My Goal 2',
                 period: 'custom',
