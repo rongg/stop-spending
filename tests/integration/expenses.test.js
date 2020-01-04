@@ -283,7 +283,7 @@ describe('api/expenses', () => {
                 .set("Accept", "application/json");
 
 
-            expect(res2.body.details[0].message).toBe("\"amount\" must be larger than or equal to 1");
+            expect(res2.body.details[0].message).toBe("\"amount\" must be larger than or equal to 0.01");
             expect(res2.status).toBe(400);
         });
         it('should make sure the expense exists', async () => {

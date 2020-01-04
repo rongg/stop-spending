@@ -61,16 +61,16 @@ describe('expense.validation.check', () => {
             expect(result.error).toBeTruthy();
 
         });
-        it('should be an integer', () => {
+        it('should be a number', () => {
             const expense = Object.assign({}, validExpense);
-            expense.amount = 1.5;
+            expense.amount = .01;
             result = validation.check(expense);
-            expect(result.error).toBeTruthy();
+            expect(result.error).toBe(null);
             expense.amount = "abcdefg";
             result = validation.check(expense);
             expect(result.error).toBeTruthy();
         });
-        it('should be between 1 and 1000000000', () => {
+        it('should be between .01 and 1000000000', () => {
             const expense = Object.assign({}, validExpense);
             expense.amount = 0;
             result = validation.check(expense);

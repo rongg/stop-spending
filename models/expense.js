@@ -5,7 +5,7 @@ let maxLengthName = 50, minLengthName = 3;
 const expenseSchema = new mongoose.Schema({
     userId: {type: String, maxLength: 25, require: true},
     name: {type: String, required: true, minLength: minLengthName, maxLength: maxLengthName},
-    amount: {type: Number, required: true, min: 1, max: 1000000000},
+    amount: {type: Number, required: true, min: .01, max: 1000000000},
     date: {type: Date, default: Date.now},
     habitId: {type: String, max: 25},
     needWant: {type: String, required: true, min: 1, max: 25}
@@ -19,7 +19,7 @@ const validation = {
             _id: Joi.string(),
             userId: Joi.string().max(25).required(),
             name: Joi.string().min(minLengthName).max(maxLengthName).required(),
-            amount: Joi.number().integer().min(1).max(1000000000).required(),
+            amount: Joi.number().min(.01).max(1000000000).required(),
             date: Joi.date(),
             habitId: Joi.string().max(25).allow(''),
             needWant: Joi.string().min(1).max(25).required()
