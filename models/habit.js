@@ -18,7 +18,7 @@ const validation ={
             _id: Joi.string(),
             userId: Joi.string().max(25).required(),
             name: Joi.string().min(minLengthName).max(maxLengthName).required(),
-            budget: Joi.number().integer().min(1).max(1000000000).required(),
+            budget: Joi.number().min(1).max(1000000000).required(),
             budgetType: Joi.string().min(1).max(25).required(),
             icon: Joi.string().max(255)
         };

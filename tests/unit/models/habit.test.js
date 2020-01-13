@@ -2,7 +2,7 @@ const {validation} = require('../../../models/habit');
 
 describe('habit.validation.check', () => {
     let result;
-    const validHabit = {userId: "12345", name: 'New Habit', budget: 100};
+    const validHabit = {userId: "12345", name: 'New Habit', budget: 100, budgetType: 'Week'};
     describe('userId', () => {
         it('should exist', () => {
             const habit = Object.assign({}, validHabit);
@@ -54,11 +54,11 @@ describe('habit.validation.check', () => {
             result = validation.check(habit);
             expect(result.error).toBeTruthy();
         });
-        it('should be an integer', () => {
+        it('should be a number', () => {
             const habit = Object.assign({}, validHabit);
             habit.budget = 12345.5;
             result = validation.check(habit);
-            expect(result.error).toBeTruthy();
+            expect(result.error).toBeNull();
 
             habit.budget = "bacd";
             result = validation.check(habit);
