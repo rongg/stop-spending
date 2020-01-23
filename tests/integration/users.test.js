@@ -1,5 +1,9 @@
 const request = require('supertest');
 const {User, generateVerificationToken} = require('../../models/user');
+const {Habit} = require('../../models/habit');
+const {Expense} = require('../../models/expense');
+const {Urge} = require('../../models/urge');
+const {Goal} = require('../../models/goal');
 const {VerifyToken} = require('../../models/verify_token');
 const mongoose = require('mongoose');
 
@@ -441,13 +445,33 @@ describe('api/users', () => {
             expect(res.status).toBe(404);
             expect(res.text).toBe("User not found");
         });
-        it('should delete the user', async () => {
+        it('should delete the user + expenses + habits + urges + goals', async () => {
+            const habit = new Habit({name: 'test', userId: user._id, budget: 100, budgetType: 'month'});
+            const expense = new Expense({name: 'test', userId: user._id, amount: 99, needWant: 'need'});
+            const urge = new Urge({userId: user._id, habitId: habit._id});
+            const goal = new Goal({
+                userId: user._id,
+                start: new Date(),
+                end: new Date(new Date().getTime() + 5*60000),
+                habitId: habit._id,
+                type: 'micro_budget',
+                pass: false,
+                active: true
+            });
+            await habit.save();
+            await expense.save();
+            await urge.save();
+            await goal.save();
+
             const res = await request(server)
                 .delete('/api/users/' + user._id)
                 .set('x-auth-token', token);
-
             expect(res.status).toBe(200);
-            expect(res.body.deletedCount).toBe(1);
+            expect(res.body[0].deletedCount).toBe(1);
+            expect(res.body[1].deletedCount).toBe(1);
+            expect(res.body[2].deletedCount).toBe(1);
+            expect(res.body[3].deletedCount).toBe(1);
+            expect(res.body[4].deletedCount).toBe(1);
         });
     });
 

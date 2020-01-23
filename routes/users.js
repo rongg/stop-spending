@@ -4,6 +4,10 @@ const router = express.Router();
 const auth = require('../middleware/auth');
 const bcrypt = require('bcryptjs');
 const sgMail = require('@sendgrid/mail');
+const {Habit} = require('../models/habit');
+const {Expense} = require('../models/expense');
+const {Urge} = require('../models/urge');
+const {Goal} = require('../models/goal');
 const {validate, User, validateId, validatePassword, generateVerificationToken, validateEmail} = require('../models/user');
 
 const {VerifyToken} = require('../models/verify_token');
@@ -191,7 +195,7 @@ router.put('/:id', auth, async (req, res) => {
     res.status(200).send(result);
 });
 
-// DELETE api/users/:id -- delete a user account
+// DELETE api/users/:id -- delete a user account + expenses + habits + urges + goals
 router.delete('/:id', auth, async (req, res) => {
     if (!validateId(req.params.id)) {
         return res.status(400).send("Not found");
@@ -203,8 +207,12 @@ router.delete('/:id', auth, async (req, res) => {
     }
 
     const result = await User.deleteOne({_id: req.params.id});
+    const eResult = await Expense.deleteMany({userId: req.params.id});
+    const hResult = await Habit.deleteMany({userId: req.params.id});
+    const uResult = await Urge.deleteMany({userId: req.params.id});
+    const gResult = await Goal.deleteMany({userId: req.params.id});
 
-    res.status(200).send(result);
+    res.status(200).send([result, eResult, hResult, uResult, gResult]);
 });
 
 module.exports = router;
