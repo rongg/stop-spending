@@ -212,6 +212,17 @@ router.delete('/:id', auth, async (req, res) => {
     const uResult = await Urge.deleteMany({userId: req.params.id});
     const gResult = await Goal.deleteMany({userId: req.params.id});
 
+    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+    const msg = {
+        to: user.email,
+        from: 'ronald.gayda.jr@gmail.com',
+        subject: 'Confirmation of Account Deletion',
+        text: 'Hi, ' + user.name + '. This email is to confirm that you have closed your account. Feel free to come back anytime at the link below!',
+        html: '<a href="https://stop-spending-app.herokuapp.com/register">Register</a>',
+    };
+    //  Don't send when testing
+    if (process.env.NODE_ENV === 'production') sgMail.send(msg);
+
     res.status(200).send([result, eResult, hResult, uResult, gResult]);
 });
 
